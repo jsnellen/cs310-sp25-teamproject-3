@@ -6,6 +6,9 @@ import java.util.*;
 import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 
+/* Group 3 Members:
+   Jordan Underwood
+*/
 public class Main {
 
     public static void main(String[] args) {
