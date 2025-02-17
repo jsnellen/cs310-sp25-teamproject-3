@@ -7,7 +7,8 @@ import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 
 /* Group 3 Members:
-   Jordan Underwood
+    Jordan Underwood
+    Magan Richey
 */
 public class Main {
 
