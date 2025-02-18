@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 
 /* Group 3 Members:
     Jordan Underwood
-    Magan Richey
+    Magan Richey**
 */
 public class Main {
 
