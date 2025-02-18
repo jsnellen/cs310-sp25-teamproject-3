@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 /* Group 3 Members:
     Jordan Underwood
     Magan Richey**
+    Fallon Shell
 */
 public class Main {
 
