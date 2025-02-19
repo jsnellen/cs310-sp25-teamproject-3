@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Punch {
-
+    
     private int id;
     private int terminalId;
     private Badge badge;

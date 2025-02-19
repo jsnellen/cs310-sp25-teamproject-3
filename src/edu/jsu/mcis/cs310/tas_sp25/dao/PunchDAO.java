@@ -13,7 +13,7 @@ public class PunchDAO {
     private static final String QUERY_FIND = "SELECT * FROM event WHERE id = ?";
     private static final String QUERY_GETEVENT = "SELECT * FROM eventtype WHERE id = ?";
     
-    // constructor for PunchDao
+    // constructor for PunchDAO
     PunchDAO(DAOFactory daoFactory) {
         this.daoFactory = daoFactory;
     }
