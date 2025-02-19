@@ -9,6 +9,7 @@ public class DepartmentDAO {
     
     private final DAOFactory daoFactory;
     
+    // constructor for DepartmentDAO
     DepartmentDAO(DAOFactory daoFactory){
         this.daoFactory = daoFactory;
     }
