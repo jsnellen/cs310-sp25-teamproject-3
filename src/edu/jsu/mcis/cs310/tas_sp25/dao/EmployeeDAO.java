@@ -9,40 +9,47 @@ public class EmployeeDAO {
     private final DAOFactory daoFactory;
     
     // Query Statements
-    private static final String QUERY_FIND = "SELECT * FROM employee WHERE id = ?";
+    private static final String QUERY_FIND_NUMID = "SELECT * FROM employee WHERE id = ?";
+    private static final String QUERY_FIND_BADGEID = "";
     
     // constructor for PunchDAO
     EmployeeDAO(DAOFactory daoFactory) {
         this.daoFactory = daoFactory;
     }
-    // Method for finding a specific employee
+    // Method for finding a specific employee with a numerical id
     public Employee find(int id) {
         Employee employee = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        ps.setInt(1, id);
-        rs = ps.executeQuery();
-        EmployeeDAO emp = daoFactory.getEmployeeDAO();
                 
         try {
             // create connection to Database and set up prepared statement
             Connection conn = daoFactory.getConnection();
             if (conn.isValid(0)) {
-                ps = conn.prepareStatement(QUERY_FIND);
+                ps = conn.prepareStatement(QUERY_FIND_NUMID);
                 ps.setInt(1, id);
                 
                 //determine if it returned results
-                if (rs.next()) {
-                String firstname = rs.getString("firstname");
-                String middlename = rs.getString("middlename");
-                String lastname = rs.getString("lastname");
-                LocalDateTime active = rs.getTimestamp("active").toLocalDateTime();
-                Badge badge = new BadgeDAO().find(rs.getInt("badge_id"));
-                Department department = new DepartmentDAO().find(rs.getInt("department_id "));
-                Shift shift = new ShiftDAO().find(rs.getInt("shift_id"));
-                EmployeeType employeeType = EmployeeType.values()[rs.getInt("employee_type")];
-
-                employee = new Employee(id, firstname, middlename, lastname, active, badge, department, shift, employeeType);
+                boolean hasResults = ps.execute();
+                if(hasResults){
+                    rs = ps.getResultSet();
+                    if (rs.next()) {
+                    // get values to be stored in employee
+                    String firstname = rs.getString("firstname");
+                    String middlename = rs.getString("middlename");
+                    String lastname = rs.getString("lastname");
+                    LocalDateTime active = rs.getTimestamp("active").toLocalDateTime();
+                    String badgeID = rs.getString("badgeid");
+                    int deptID = rs.getInt("departmentid");
+                    int shiftID = rs.getInt("shiftid");
+                    int empTypeID = rs.getInt("employeetypeid");
+                    // use the IDs to get the corresponding objects
+                    Badge badge = daoFactory.getBadgeDAO().find(badgeID);
+                    Department department = daoFactory.getDepartmentDAO().find(deptID);
+                    Shift shift = daoFactory.getShiftDAO().find(shiftID);
+                    EmployeeType employeeType = EmployeeType.values()[empTypeID];
+                    employee = new Employee(id, firstname, middlename, lastname, active, badge, department, shift, employeeType);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -66,116 +73,9 @@ public class EmployeeDAO {
         return employee;
     }
     
-    // Method for listing several punches made by one person
-    public ArrayList list(Badge b, LocalDate time) {
-        Punch punch = null;
-        ArrayList<Punch> results = new ArrayList<>();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        // convert the provided LocalDate to a Timestamp object for the database
-        LocalDateTime convert = time.atStartOfDay();
-        Timestamp ts = Timestamp.valueOf(convert);
-      
-        try {
-            // create connection to Database and set up prepared statement
-            Connection conn = daoFactory.getConnection();
-            if (conn.isValid(0)) {
-                ps = conn.prepareStatement(QUERY_LIST);
-                ps.setString(1, b.getId());
-                ps.setTimestamp(2, ts);
-                
-                // execute query and determine if it gets results
-                boolean hasresults = ps.execute();
-                if (hasresults) {
-                    rs = ps.getResultSet();
-                    // loop through result set and create punch objects to hold data obtained from database records
-                    while (rs.next()) {
-                        int numID = rs.getInt("id");
-                        int terminalID = rs.getInt("terminalid");
-                        LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
-                        EventType eventtype = getEventType(rs.getInt("eventtypeid"));
-                        punch = new Punch(numID, terminalID, b, timestamp, eventtype);
-                        // add the created punch to the results list
-                        results.add(punch);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new DAOException(e.getMessage());
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    throw new DAOException(e.getMessage());
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    throw new DAOException(e.getMessage());
-                }
-            }
-        }
-        return results;
-    }
-    
-    // method for getting the eventtype based on an eventtypeid
-    public EventType getEventType(int eventTypeID){
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        EventType event = null;
-        
-        try{
-            // create connection to Database and set up prepared statement
-            Connection conn = daoFactory.getConnection();
-            if (conn.isValid(0)){
-                ps = conn.prepareStatement(QUERY_GETEVENT);
-                ps.setInt(1, eventTypeID);
-                // Execute the query and determine if it returned results
-                boolean hasresults = ps.execute();
-                if (hasresults) {
-                    rs = ps.getResultSet();
-                    // check the returned record to see which event was referenced
-                    while (rs.next()) {
-                        switch(rs.getString("description")){
-                            case "Clock-Out Punch":
-                                // event = EventType.valueOf("CLOCK OUT");
-                                event = EventType.CLOCK_OUT;
-                                break;
-                            case "Clock-In Punch":
-                                // event = EventType.valueOf("CLOCK IN");
-                                event = EventType.CLOCK_IN;
-                                break;
-                            case "Clock Time Out":
-                                // event = EventType.valueOf("TIME OUT");
-                                event = EventType.TIME_OUT;
-                                break;
-                            default:
-                                event = null;
-                        }
-                    }
-                }
-            }
-        }catch (SQLException e) {
-            throw new DAOException(e.getMessage());
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    throw new DAOException(e.getMessage());
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    throw new DAOException(e.getMessage());
-                }
-            }
-        }
-        return event;
+    // method for finding a single employee using a badge id
+    public Employee find(Badge id){
+        Employee employee = null;
+        return employee;
     }
 }

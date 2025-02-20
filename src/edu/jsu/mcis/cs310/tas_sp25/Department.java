@@ -1,4 +1,4 @@
-package edu.jsu.mcis.cs310.tas_sp25.model;
+package edu.jsu.mcis.cs310.tas_sp25;
 
 public class Department {
     
@@ -29,10 +29,9 @@ public class Department {
     // toString() Method for Debugging
     @Override
     public String toString() {
-        return "Department {" +
-                "ID: " + id +
-                ", Description: \"" + description + "\"" +  // Corrected Quotes
-                ", Terminal ID: " + terminalId +
-                '}';
+        StringBuilder s = new StringBuilder();
+        s.append('#').append(this.getId()).append(" (").append(this.getDescription());
+        s.append("), Terminal ID: ").append(this.getTerminalId());
+        return s.toString();
     }
 }

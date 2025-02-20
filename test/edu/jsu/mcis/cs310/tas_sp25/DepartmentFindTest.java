@@ -68,7 +68,7 @@ public class DepartmentFindTest {
 
         /* Retrieve Department from Database */
         
-        Department d4 = departmentDAO.find(8);
+        Department d4 = departmentDAO.find(4);
 
         /* Compare to Expected Values */
         
@@ -83,7 +83,7 @@ public class DepartmentFindTest {
 
         /* Retrieve Department from Database */
         
-        Department d5 = departmentDAO.find(8);
+        Department d5 = departmentDAO.find(10);
 
         /* Compare to Expected Values */
         

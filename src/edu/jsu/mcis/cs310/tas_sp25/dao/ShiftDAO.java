@@ -1,5 +1,6 @@
 package edu.jsu.mcis.cs310.tas_sp25.dao;
 
+import edu.jsu.mcis.cs310.tas_sp25.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,7 +24,7 @@ public class ShiftDAO {
         this.connection = daoFactory.getConnection();
     }
     
-    private static final String QUERY_FIND_BY_ID = "SELECT * FROM shifts WHERE id = ?";
+    private static final String QUERY_FIND_BY_ID = "SELECT * FROM shift WHERE id = ?";
     private static final String QUERY_FIND_BY_BADGE = "SELECT shift_id FROM employee_shifts WHERE badge_id = ?";
 
     
@@ -45,14 +46,14 @@ public class ShiftDAO {
                     HashMap<String, String> shiftData = new HashMap<>();
                     
                     shiftData.put("id", String.valueOf(rs.getInt("id")));
-                    shiftData.put("start_time", rs.getString("start_time"));
-                    shiftData.put("stop_time", rs.getString("stop_time"));
-                    shiftData.put("lunch_start", rs.getString("lunch_start"));
-                    shiftData.put("lunch_stop", rs.getString("lunch_stop"));
+                    shiftData.put("start_time", rs.getString("shiftstart"));
+                    shiftData.put("stop_time", rs.getString("shiftstop"));
+                    shiftData.put("lunch_start", rs.getString("lunchstart"));
+                    shiftData.put("lunch_stop", rs.getString("lunchstop"));
                     
                     // Calculate durations (handling potential NULL values)
-                    int lunchDuration = calculateDuration(rs.getString("lunch_start"), rs.getString("lunch_stop"));
-                    int shiftDuration = calculateDuration(rs.getString("start_time"), rs.getString("stop_time"));
+                    int lunchDuration = calculateDuration(rs.getString("lunchstart"), rs.getString("lunchstop"));
+                    int shiftDuration = calculateDuration(rs.getString("shiftstart"), rs.getString("shiftstop"));
 
                     shiftData.put("lunchduration", String.valueOf(lunchDuration));
                     shiftData.put("shiftduration", String.valueOf(shiftDuration));

@@ -42,6 +42,8 @@ public class Employee {
 
     @Override
     public String toString() {
+        return printOriginal();
+        /* *** Jordan commented this out because it seems unnecessary
         return String.format("ID: %d, "
                 + "Name: %s %s %s, "
                 + "Badge ID: %s, "
@@ -49,7 +51,9 @@ public class Employee {
                 + "Department: %s, "
                 + "Active Date: %s, "
                 + "Inactive Date: %s",
-                id, firstname, middlename, lastname, badge.getId(), employeeType.toString(), department.getDescription(), active.toString(), //inactive.toString());
+                id, firstname, middlename, lastname, badge.getId(), employeeType.toString(), department.getDescription(), active.toString());//, inactive.toString());
+        */
+    }
                 
     public String printOriginal() {
         StringBuilder s = new StringBuilder();
@@ -64,7 +68,7 @@ public class Employee {
         s.append("Adjusted Event: ").append(active.format(DateTimeFormatter.ofPattern("MM-dd-yyyy")));
         return s.toString();
     }
-    }
+}
 
 
 
