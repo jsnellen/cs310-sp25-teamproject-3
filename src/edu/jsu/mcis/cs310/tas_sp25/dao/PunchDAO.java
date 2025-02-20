@@ -11,7 +11,6 @@ public class PunchDAO {
     // Query Statements
     private static final String QUERY_LIST = "SELECT * FROM event WHERE badgeid = ? AND DATE(timestamp) = ? ORDER BY timestamp";
     private static final String QUERY_FIND = "SELECT * FROM event WHERE id = ?";
-    private static final String QUERY_GETEVENT = "SELECT * FROM eventtype WHERE id = ?";
     
     // constructor for PunchDAO
     PunchDAO(DAOFactory daoFactory) {
@@ -41,7 +40,7 @@ public class PunchDAO {
                         int terminalID = rs.getInt("terminalid");
                         Badge badge = bd1.find(rs.getString("badgeid"));
                         LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
-                        EventType eventtype = getEventType(rs.getInt("eventtypeid"));
+                        EventType eventtype = EventType.values()[rs.getInt("eventtypeid")];
                         punch = new Punch(numID, terminalID, badge, timestamp, eventtype);
                     }
                 }
@@ -94,7 +93,7 @@ public class PunchDAO {
                         int numID = rs.getInt("id");
                         int terminalID = rs.getInt("terminalid");
                         LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
-                        EventType eventtype = getEventType(rs.getInt("eventtypeid"));
+                        EventType eventtype = EventType.values()[rs.getInt("eventtypeid")];
                         punch = new Punch(numID, terminalID, b, timestamp, eventtype);
                         // add the created punch to the results list
                         results.add(punch);
@@ -121,65 +120,6 @@ public class PunchDAO {
         }
         return results;
     }
-    
-    // method for getting the eventtype based on an eventtypeid
-    public EventType getEventType(int eventTypeID){
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        EventType event = null;
-        
-        try{
-            // create connection to Database and set up prepared statement
-            Connection conn = daoFactory.getConnection();
-            if (conn.isValid(0)){
-                ps = conn.prepareStatement(QUERY_GETEVENT);
-                ps.setInt(1, eventTypeID);
-                // Execute the query and determine if it returned results
-                boolean hasresults = ps.execute();
-                if (hasresults) {
-                    rs = ps.getResultSet();
-                    // check the returned record to see which event was referenced
-                    while (rs.next()) {
-                        switch(rs.getString("description")){
-                            case "Clock-Out Punch":
-                                // event = EventType.valueOf("CLOCK OUT");
-                                event = EventType.CLOCK_OUT;
-                                break;
-                            case "Clock-In Punch":
-                                // event = EventType.valueOf("CLOCK IN");
-                                event = EventType.CLOCK_IN;
-                                break;
-                            case "Clock Time Out":
-                                // event = EventType.valueOf("TIME OUT");
-                                event = EventType.TIME_OUT;
-                                break;
-                            default:
-                                event = null;
-                        }
-                    }
-                }
-            }
-        }catch (SQLException e) {
-            throw new DAOException(e.getMessage());
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    throw new DAOException(e.getMessage());
-                }
-            }
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    throw new DAOException(e.getMessage());
-                }
-            }
-        }
-        return event;
-    }
-    
     /*
     public Punch create(Punch punch) {
         int generatedId = 0;
