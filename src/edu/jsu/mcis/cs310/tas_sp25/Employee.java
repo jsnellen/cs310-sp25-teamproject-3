@@ -1,5 +1,5 @@
 package edu.jsu.mcis.cs310.tas_sp25;
-
+import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 
 public class Employee {
@@ -8,6 +8,7 @@ public class Employee {
     private String middlename;
     private String lastname;
     private LocalDateTime active;
+    //private LocalDateTime inactive; This will be used in the future.//
     private Badge badge;
     private Department department;
     private Shift shift;
@@ -20,6 +21,7 @@ public class Employee {
         this.middlename = middlename;
         this.lastname = lastname;
         this.active = active;
+        //this.inactive = inactive;
         this.badge = badge;
         this.department = department;
         this.shift = shift;
@@ -32,6 +34,7 @@ public class Employee {
     public String getMiddlename() { return middlename; }
     public String getLastname() { return lastname; }
     public LocalDateTime getActive() { return active; }
+    //public LocalDateTime getInactive() {return inactive;}
     public Badge getBadge() { return badge; }
     public Department getDepartment() { return department; }
     public Shift getShift() { return shift; }
@@ -39,8 +42,32 @@ public class Employee {
 
     @Override
     public String toString() {
-        return String.format("ID: %d, Name: %s %s %s, Badge ID: %s, Type: %s, Department: %s, Active Date: %s",
-                id, firstname, middlename, lastname, badge.getId(), employeeType.toString(), department.getDescription(), active.toString());
+        return String.format("ID: %d, "
+                + "Name: %s %s %s, "
+                + "Badge ID: %s, "
+                + "Type: %s, "
+                + "Department: %s, "
+                + "Active Date: %s, "
+                + "Inactive Date: %s",
+                id, firstname, middlename, lastname, badge.getId(), employeeType.toString(), department.getDescription(), active.toString(), //inactive.toString());
+                
+    public String printOriginal() {
+        StringBuilder s = new StringBuilder();
+        s.append('#').append(badge.getId()).append(' ');
+        s.append("Original Event: ").append(active.format(DateTimeFormatter.ofPattern("MM-dd-yyyy")));
+        return s.toString();
     }
-}
+
+    public String printAdjusted() {
+        StringBuilder s = new StringBuilder();
+        s.append('#').append(badge.getId()).append(' ');
+        s.append("Adjusted Event: ").append(active.format(DateTimeFormatter.ofPattern("MM-dd-yyyy")));
+        return s.toString();
+    }
+    }
+
+
+
+
+
 
