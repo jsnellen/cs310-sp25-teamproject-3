@@ -46,6 +46,7 @@ public class ShiftDAO {
                     HashMap<String, String> shiftData = new HashMap<>();
                     
                     shiftData.put("id", String.valueOf(rs.getInt("id")));
+                    shiftData.put("description", rs.getString("description"));
                     shiftData.put("start_time", rs.getString("shiftstart"));
                     shiftData.put("stop_time", rs.getString("shiftstop"));
                     shiftData.put("lunch_start", rs.getString("lunchstart"));
