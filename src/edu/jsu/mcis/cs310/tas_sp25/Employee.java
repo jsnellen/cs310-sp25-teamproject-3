@@ -41,18 +41,24 @@ public class Employee {
     public EmployeeType getEmployeeType() { return employeeType; }
 
     @Override
+    
     public String toString() {
-        return printOriginal();
-        /* *** Jordan commented this out because it seems unnecessary
-        return String.format("ID: %d, "
-                + "Name: %s %s %s, "
-                + "Badge ID: %s, "
+        StringBuilder s = new StringBuilder();
+        s.append('#').append(badge.getId()).append(' ');
+        s.append("Original Event: ").append(active.format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
+        //return s.toString();
+        //return printOriginal();
+        ///Jordan commented this out because it seems unnecessary
+        return String.format("ID #%d: "
+                + lastname + ", " + firstname + " " + middlename 
+                + " (#%s), "
                 + "Type: %s, "
                 + "Department: %s, "
-                + "Active Date: %s, "
-                + "Inactive Date: %s",
-                id, firstname, middlename, lastname, badge.getId(), employeeType.toString(), department.getDescription(), active.toString());//, inactive.toString());
-        */
+                + "Active: %s",
+                //+ "Active Date: %s, "
+                //+ "Inactive Date: %s",
+                id, badge.getId(), employeeType.toString(), department.getDescription(), active.format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));//, inactive.toString());
+        
     }
                 
     public String printOriginal() {
