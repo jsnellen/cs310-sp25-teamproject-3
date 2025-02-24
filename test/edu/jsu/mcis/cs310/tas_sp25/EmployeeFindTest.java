@@ -78,5 +78,21 @@ public class EmployeeFindTest {
         assertEquals("ID #93: Leist, Rodney J (#C1E4758D), Type: Temporary / Part-Time, Department: Warehouse, Active: 10/09/2015", e4.toString());
 
     }
+       @Test
+    public void testFindEmployee5() {
+        
+        EmployeeDAO employeeDAO = daoFactory.getEmployeeDAO();
+        BadgeDAO badgeDAO = daoFactory.getBadgeDAO();
+
+        /* Retrieve Employee from Database (by badge) */
+
+        Badge b = badgeDAO.find("4C459F1E");
+        Employee e5 = employeeDAO.find(b);
+
+        /* Compare to Expected Values */
+        
+        assertEquals("ID #34: Knaus, Robert B (#4C459F1E), Type: Full-Time, Department: Assembly, Active: 01/07/2017", e5.toString());
+
+    }
     
 }
