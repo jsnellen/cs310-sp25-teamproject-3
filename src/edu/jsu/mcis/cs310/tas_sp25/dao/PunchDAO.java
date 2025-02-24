@@ -11,6 +11,7 @@ public class PunchDAO {
     // Query Statements
     private static final String QUERY_LIST = "SELECT * FROM event WHERE badgeid = ? AND DATE(timestamp) = ? ORDER BY timestamp";
     private static final String QUERY_FIND = "SELECT * FROM event WHERE id = ?";
+    private static final String QUERY_CREATE = "";
     
     // constructor for PunchDAO
     PunchDAO(DAOFactory daoFactory) {
@@ -120,29 +121,53 @@ public class PunchDAO {
         }
         return results;
     }
-    /*
-    public Punch create(Punch punch) {
-        int generatedId = 0;
-        String query = "INSERT INTO event (terminalid, badgeid, timestamp, eventtypeid) VALUES (?, ?, ?, ?)";
+    
+    // method for creating new punches and inserting them into the database
+    public int create(Punch punch) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        int punchID = 0;
+        try{
+            Connection conn = daoFactory.getConnection();
+            if(conn.isValid(0)){
+                // set up prepared statement
+                ps = conn.prepareStatement(QUERY_CREATE);
+                // find the employee associated with this punch and get the terminalID
+                // associated with their department
+                Employee emp = daoFactory.getEmployeeDAO().find(punch.getBadge());
+                int departmentTermID = emp.getDepartment().getTerminalId();
 
-        try (PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setInt(1, punch.getTerminalId());
-            stmt.setString(2, punch.getBadge().getId());
-            stmt.setTimestamp(3, Timestamp.valueOf(punch.getOriginalTimestamp()));
-            stmt.setInt(4, punch.getEventType().ordinal());
-
-            stmt.executeUpdate();
-            ResultSet rs = stmt.getGeneratedKeys();
-
-            if (rs.next()) {
-                generatedId = rs.getInt(1);
-                punch.setId(generatedId);  // Update the Punch object with the new ID
+                if(punch.getTerminalid() == 0 || punch.getTerminalid() == departmentTermID){
+                    // create a new record in the event table with the data from this punch
+                    
+                    int newPunchID;
+                    // retrieve the punchID from the newly created punch and return it
+                    return newPunchID;
+                }
+                else {
+                    punchID = 0;
+                }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-
-        return punch;  // Return the full Punch object, not just the ID
+        catch (SQLException e) {
+            throw new DAOException(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    throw new DAOException(e.getMessage());
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    throw new DAOException(e.getMessage());
+                }
+            }
+        }
+        return punchID;
     }
-*/
+
 }
