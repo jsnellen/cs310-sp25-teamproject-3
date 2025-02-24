@@ -25,7 +25,7 @@ public class ShiftDAO {
     }
     
     private static final String QUERY_FIND_BY_ID = "SELECT * FROM shift WHERE id = ?";
-    private static final String QUERY_FIND_BY_BADGE = "SELECT shift_id FROM employee_shifts WHERE badge_id = ?";
+    private static final String QUERY_FIND_BY_BADGE = "SELECT shiftid FROM employee WHERE badgeid = ?";
 
     
     // Finds a Shift by Shift ID
@@ -80,8 +80,10 @@ public class ShiftDAO {
 
     /**
      * Finds a Shift by Badge ID
+     * @param badge
+     * @return 
      */
-    public Shift find(String badgeId) {
+    public Shift find(Badge badge) {
         Shift shift = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -89,11 +91,11 @@ public class ShiftDAO {
         try {
             if (connection != null && connection.isValid(0)) {
                 ps = connection.prepareStatement(QUERY_FIND_BY_BADGE);
-                ps.setString(1, badgeId);
+                ps.setString(1, badge.getId());
                 rs = ps.executeQuery();
 
                 if (rs.next()) {
-                    int shiftId = rs.getInt("shift_id"); // Get the shift ID from employee_shifts table
+                    int shiftId = rs.getInt("shiftid"); // Get the shift ID from employee_shifts table
                     shift = find(shiftId); // Use existing find() method to get full Shift details
                 }
             }
