@@ -11,7 +11,7 @@ public class PunchDAO {
     // Query Statements
     private static final String QUERY_LIST = "SELECT * FROM event WHERE badgeid = ? AND DATE(timestamp) = ? ORDER BY timestamp";
     private static final String QUERY_FIND = "SELECT * FROM event WHERE id = ?";
-    private static final String QUERY_CREATE = "";
+    private static final String QUERY_CREATE = "INSERT INTO event(terminalid, badgeid, timestamp, eventtypeid) VALUES (?, ?, ?, ?)";
     
     // constructor for PunchDAO
     PunchDAO(DAOFactory daoFactory) {
@@ -127,22 +127,32 @@ public class PunchDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         int punchID = 0;
+        //int newPunchID = -1; // placeholder value for testing
         try{
             Connection conn = daoFactory.getConnection();
             if(conn.isValid(0)){
-                // set up prepared statement
-                ps = conn.prepareStatement(QUERY_CREATE);
                 // find the employee associated with this punch and get the terminalID
                 // associated with their department
                 Employee emp = daoFactory.getEmployeeDAO().find(punch.getBadge());
                 int departmentTermID = emp.getDepartment().getTerminalId();
 
                 if(punch.getTerminalid() == 0 || punch.getTerminalid() == departmentTermID){
+                    // set up prepared statement
+                    Timestamp tmstmp = Timestamp.valueOf(punch.getOriginaltimestamp().withNano(0));
+                    ps = conn.prepareStatement(QUERY_CREATE, PreparedStatement.RETURN_GENERATED_KEYS);
+                    ps.setInt(1, punch.getTerminalid());
+                    ps.setString(2, punch.getBadge().getId());
+                    ps.setTimestamp(3, tmstmp);
+                    ps.setInt(4, punch.getPunchtype().ordinal());
                     // create a new record in the event table with the data from this punch
-                    
-                    int newPunchID;
-                    // retrieve the punchID from the newly created punch and return it
-                    return newPunchID;
+                    int numRows = ps.executeUpdate();
+                    if(numRows > 0){
+                        // retrieve the punchID from the newly created punch
+                        rs = ps.getGeneratedKeys();
+                        if(rs.next()){
+                            punchID = rs.getInt(1);
+                        }
+                    }
                 }
                 else {
                     punchID = 0;
