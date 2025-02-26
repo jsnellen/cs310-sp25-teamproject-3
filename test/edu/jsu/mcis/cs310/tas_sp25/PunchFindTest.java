@@ -72,6 +72,34 @@ public class PunchFindTest {
 
     }
     
-    // need a few more tests
+    // Tests added by Jordan
+    @Test
+    public void testFindPunches4() {
+        PunchDAO punchDAO = daoFactory.getPunchDAO();
+
+        /* Retrieve Punches from Database */
+        Punch p10 = punchDAO.find(231);
+        Punch p11 = punchDAO.find(638);
+        Punch p12 = punchDAO.find(924);
+
+        /* Compare to Expected Values */
+        assertEquals("#0FFA272B CLOCK OUT: WED 08/01/2018 15:33:55", p10.printOriginal());
+        assertEquals("#229324A4 CLOCK IN: TUE 08/07/2018 06:59:04", p11.printOriginal());
+        assertEquals("#BEAFDB2F CLOCK OUT: THU 08/09/2018 15:32:36", p12.printOriginal());
+    }
     
+    @Test
+    public void testFindPunches5() {
+        PunchDAO punchDAO = daoFactory.getPunchDAO();
+
+        /* Retrieve Punches from Database */
+        Punch p10 = punchDAO.find(1152);
+        Punch p11 = punchDAO.find(1083);
+        Punch p12 = punchDAO.find(1000);
+
+        /* Compare to Expected Values */
+        assertEquals("#DD6E2C0C CLOCK OUT: SAT 08/11/2018 11:03:50", p10.printOriginal());
+        assertEquals("#2A7F5D99 CLOCK IN: SAT 08/11/2018 05:49:34", p11.printOriginal());
+        assertEquals("#229324A4 CLOCK IN: FRI 08/10/2018 06:59:46", p12.printOriginal());
+    }
 }
