@@ -10,6 +10,7 @@ public class EmployeeDAO {
     
     // Query Statements
     private static final String QUERY_FIND_NUMID = "SELECT * FROM employee WHERE id = ?";
+    // *** Query can be adjusted for simplicity ***
     private static final String QUERY_FIND_BADGEID = "SELECT * FROM employee WHERE badgeid = ?";
     
     // constructor for PunchDAO
@@ -92,6 +93,7 @@ public class EmployeeDAO {
                     rs = ps.getResultSet();
                     if (rs.next()) {
                     // get values to be stored in employee
+                    // *** Can be adjusted for simplicity ***
                     int empid = rs.getInt("id");
                     String firstname = rs.getString("firstname");
                     String middlename = rs.getString("middlename");

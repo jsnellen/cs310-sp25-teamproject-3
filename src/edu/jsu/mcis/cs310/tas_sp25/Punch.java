@@ -61,15 +61,7 @@ public class Punch {
 
     @Override
     public String toString() {
-        return "Punch: {" +
-                "ID: " + id +
-                ", Terminal: " + terminalId +
-                ", Badge: " + badge +
-                ", Original Timestamp: " + originalTimestamp +
-                ", Adjusted Timestamp: " + adjustedTimestamp +
-                ", Event Type: " + eventType +
-                ", Adjustment Type: " + adjustmentType +
-                "}";
+        return printOriginal();
     }
     
     // Test String to visualize an output -> "#D2C39273 CLOCK IN: WED 09/05/2018 07:00:07"

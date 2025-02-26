@@ -60,4 +60,5 @@ public class BadgeFindTest {
 
     }
     
+    // need a few more tests
 }

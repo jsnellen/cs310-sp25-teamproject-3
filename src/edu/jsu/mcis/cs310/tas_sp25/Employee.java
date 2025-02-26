@@ -15,6 +15,7 @@ public class Employee {
     private EmployeeType employeeType;
 
     // Constructor
+    // adjust constructor to use a hashmap
     public Employee(int id, String firstname, String middlename, String lastname, LocalDateTime active, Badge badge, Department department, Shift shift, EmployeeType employeeType) {
         this.id = id;
         this.firstname = firstname;

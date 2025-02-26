@@ -45,6 +45,7 @@ public class ShiftDAO {
                     // Create HashMap to store shift data
                     HashMap<String, String> shiftData = new HashMap<>();
                     
+                    // *** Can be adjusted to use ResultSetMetadata to loop for information ***
                     shiftData.put("id", String.valueOf(rs.getInt("id")));
                     shiftData.put("description", rs.getString("description"));
                     shiftData.put("start_time", rs.getString("shiftstart"));

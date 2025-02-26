@@ -65,6 +65,7 @@ public class Shift {
     // toString to describe shift
     @Override
     public String toString() {
+        // adjust to use string builder
         return description + ": " + start + " - " + stop + " (" + shiftDuration + " minutes); Lunch: " +
                 lunchStart + " - " + lunchStop + " (" + lunchDuration + " minutes)";
     }
