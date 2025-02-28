@@ -1,5 +1,6 @@
 package edu.jsu.mcis.cs310.tas_sp25.dao;
 
+import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import edu.jsu.mcis.cs310.tas_sp25.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -46,12 +47,16 @@ public class ShiftDAO {
                     HashMap<String, String> shiftData = new HashMap<>();
                     
                     // *** Can be adjusted to use ResultSetMetadata to loop for information ***
-                    shiftData.put("id", String.valueOf(rs.getInt("id")));
-                    shiftData.put("description", rs.getString("description"));
-                    shiftData.put("start_time", rs.getString("shiftstart"));
-                    shiftData.put("stop_time", rs.getString("shiftstop"));
-                    shiftData.put("lunch_start", rs.getString("lunchstart"));
-                    shiftData.put("lunch_stop", rs.getString("lunchstop"));
+                    // Get metadata about the ResultSet
+                    ResultSetMetaData metaData = (ResultSetMetaData) rs.getMetaData();
+                    int columnCount = metaData.getColumnCount();
+
+                     // Loop through all columns dynamically
+                    for (int i = 1; i <= columnCount; i++) {
+                    String columnName = metaData.getColumnName(i);
+                    String columnValue = rs.getString(i); // Get column value as string
+                    shiftData.put(columnName, columnValue);
+                    }
                     
                     // Calculate durations (handling potential NULL values)
                     int lunchDuration = calculateDuration(rs.getString("lunchstart"), rs.getString("lunchstop"));
