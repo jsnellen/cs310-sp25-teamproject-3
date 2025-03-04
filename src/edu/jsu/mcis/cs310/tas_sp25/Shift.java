@@ -2,6 +2,7 @@ package edu.jsu.mcis.cs310.tas_sp25;
 
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Shift {
 
@@ -14,22 +15,19 @@ public class Shift {
     private final int lunchDuration; 
     private final int shiftDuration; 
 
-    
-     // Constructor to initialize the Shift object using a HashMap.
-     
+    // Constructor to initialize the Shift object using a HashMap.
     public Shift(HashMap<String, String> shiftData) {
-        this.id = Integer.parseInt(shiftData.get("id"));
-        this.description = shiftData.get("description"); 
-        this.start = LocalTime.parse(shiftData.get("start_time"));
-        this.stop = LocalTime.parse(shiftData.get("stop_time"));
-        this.lunchStart = LocalTime.parse(shiftData.get("lunch_start"));
-        this.lunchStop = LocalTime.parse(shiftData.get("lunch_stop"));
-        this.lunchDuration = Integer.parseInt(shiftData.get("lunchduration"));
-        this.shiftDuration = Integer.parseInt(shiftData.get("shiftduration"));
+        this.id = Integer.parseInt(Objects.requireNonNull(shiftData.get("id"), "ID is missing"));
+        this.description = Objects.requireNonNull(shiftData.get("description"), "Description is missing");
+        this.start = LocalTime.parse(Objects.requireNonNull(shiftData.get("start_time"), "00:00"));
+        this.stop = LocalTime.parse(Objects.requireNonNull(shiftData.get("stop_time"), "00:00"));
+        this.lunchStart = LocalTime.parse(Objects.requireNonNull(shiftData.get("lunch_start"), "00:00"));
+        this.lunchStop = LocalTime.parse(Objects.requireNonNull(shiftData.get("lunch_stop"), "00:00"));
+        this.lunchDuration = Integer.parseInt(Objects.requireNonNull(shiftData.get("lunchduration"), "0"));
+        this.shiftDuration = Integer.parseInt(Objects.requireNonNull(shiftData.get("shiftduration"), "0"));
     }
 
     // Getters for all fields
-
     public int getId() {
         return id;
     }
@@ -65,8 +63,11 @@ public class Shift {
     // toString to describe shift
     @Override
     public String toString() {
-        // adjust to use string builder
-        return description + ": " + start + " - " + stop + " (" + shiftDuration + " minutes); Lunch: " +
-                lunchStart + " - " + lunchStop + " (" + lunchDuration + " minutes)";
+        StringBuilder sb = new StringBuilder();
+        sb.append(description).append(": ").append(start).append(" - ").append(stop)
+          .append(" (").append(shiftDuration).append(" minutes); Lunch: ")
+          .append(lunchStart).append(" - ").append(lunchStop)
+          .append(" (").append(lunchDuration).append(" minutes)");
+        return sb.toString();
     }
 }

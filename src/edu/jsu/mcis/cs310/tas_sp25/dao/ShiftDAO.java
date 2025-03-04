@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  *
@@ -28,9 +29,7 @@ public class ShiftDAO {
     private static final String QUERY_FIND_BY_ID = "SELECT * FROM shift WHERE id = ?";
     private static final String QUERY_FIND_BY_BADGE = "SELECT shiftid FROM employee WHERE badgeid = ?";
 
-    
     // Finds a Shift by Shift ID
-     
     public Shift find(int shiftId) {
         Shift shift = null; 
         PreparedStatement ps = null;
@@ -46,16 +45,15 @@ public class ShiftDAO {
                     // Create HashMap to store shift data
                     HashMap<String, String> shiftData = new HashMap<>();
                     
-                    // *** Can be adjusted to use ResultSetMetadata to loop for information ***
                     // Get metadata about the ResultSet
                     ResultSetMetaData metaData = (ResultSetMetaData) rs.getMetaData();
                     int columnCount = metaData.getColumnCount();
 
-                     // Loop through all columns dynamically
+                    // Loop through all columns dynamically
                     for (int i = 1; i <= columnCount; i++) {
-                    String columnName = metaData.getColumnName(i);
-                    String columnValue = rs.getString(i); // Get column value as string
-                    shiftData.put(columnName, columnValue);
+                        String columnName = metaData.getColumnName(i);
+                        String columnValue = rs.getString(i); // Get column value as string
+                        shiftData.put(columnName, columnValue);
                     }
                     
                     // Calculate durations (handling potential NULL values)
@@ -65,7 +63,8 @@ public class ShiftDAO {
                     shiftData.put("lunchduration", String.valueOf(lunchDuration));
                     shiftData.put("shiftduration", String.valueOf(shiftDuration));
 
-                    shift = new Shift(shiftData);
+                    // Validate shiftData entries
+                    shift = new Shift(validateShiftData(shiftData));
                 }
             }
         } 
@@ -84,11 +83,7 @@ public class ShiftDAO {
         return shift;
     }
 
-    /**
-     * Finds a Shift by Badge ID
-     * @param badge
-     * @return 
-     */
+    // Finds a Shift by Badge ID
     public Shift find(Badge badge) {
         Shift shift = null;
         PreparedStatement ps = null;
@@ -121,9 +116,21 @@ public class ShiftDAO {
         return shift;
     }
 
-    
+    // Helper method to validate shift data
+    private HashMap<String, String> validateShiftData(HashMap<String, String> shiftData) {
+        HashMap<String, String> validatedShiftData = new HashMap<>();
+        validatedShiftData.put("id", Objects.requireNonNull(shiftData.get("id"), "ID is missing"));
+        validatedShiftData.put("description", Objects.requireNonNull(shiftData.get("description"), "Description is missing"));
+        validatedShiftData.put("start_time", Objects.requireNonNullElse(shiftData.get("shiftstart"), "00:00")); // Updated key
+        validatedShiftData.put("stop_time", Objects.requireNonNullElse(shiftData.get("shiftstop"), "00:00")); // Updated key
+        validatedShiftData.put("lunch_start", Objects.requireNonNullElse(shiftData.get("lunchstart"), "00:00")); // Updated key
+        validatedShiftData.put("lunch_stop", Objects.requireNonNullElse(shiftData.get("lunchstop"), "00:00")); // Updated key
+        validatedShiftData.put("lunchduration", Objects.requireNonNullElse(shiftData.get("lunchduration"), "0"));
+        validatedShiftData.put("shiftduration", Objects.requireNonNullElse(shiftData.get("shiftduration"), "0"));
+        return validatedShiftData;
+    }
+
     // Helper method to calculate duration in minutes
-     
     private int calculateDuration(String start, String stop) {
         if (start == null || stop == null) {
             return 0; // Handle null values 
