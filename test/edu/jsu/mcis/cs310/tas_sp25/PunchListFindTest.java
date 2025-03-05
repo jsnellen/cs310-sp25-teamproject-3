@@ -146,7 +146,7 @@ public class PunchListFindTest {
         StringBuilder s2 = new StringBuilder();
 
         /* Create Timestamp and Badge Objects for Punch List */
-        LocalDate ts = LocalDate.of(2018, Month.SEPTEMBER, 5);
+        LocalDate ts = LocalDate.of(2018, Month.AUGUST, 1);
         Badge b = badgeDAO.find("229324A4");
 
         /* Retrieve Punch List #1 (created by DAO) */
@@ -162,8 +162,8 @@ public class PunchListFindTest {
         ArrayList<Punch> p2 = new ArrayList<>();
 
         /* Add Punches */
+        p2.add(punchDAO.find(194));
         p2.add(punchDAO.find(214));
-        p2.add(punchDAO.find(415));
 
         /* Export Punch List #2 Contents to StringBuilder */
         for (Punch p : p2) {
