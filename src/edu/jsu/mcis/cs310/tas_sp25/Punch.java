@@ -2,6 +2,7 @@ package edu.jsu.mcis.cs310.tas_sp25;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 public class Punch {
     
@@ -53,10 +54,62 @@ public class Punch {
     public void setAdjustmentType(PunchAdjustmentType adjustmentType) {
         this.adjustmentType = adjustmentType;
     }
+    
+    public void adjust(Shift shift) {
+        if (shift == null || originalTimestamp == null) return;
 
-    public void adjustPunch(LocalDateTime adjustedTimestamp, PunchAdjustmentType adjustmentType) {
-        this.adjustedTimestamp = adjustedTimestamp;
-        this.adjustmentType = adjustmentType;
+        LocalDateTime shiftStart = originalTimestamp.with(shift.getStart());
+        LocalDateTime shiftStop = originalTimestamp.with(shift.getStop());
+        LocalDateTime lunchStart = originalTimestamp.with(shift.getLunchStart());
+        LocalDateTime lunchStop = originalTimestamp.with(shift.getLunchStop());
+        
+        int roundInterval = shift.getRoundInterval();
+        int gracePeriod = shift.getGracePeriod();
+        int dockPenalty = shift.getDockPenalty();
+
+        // Default adjustment type is None
+        adjustmentType = PunchAdjustmentType.NONE;
+        adjustedTimestamp = originalTimestamp.truncatedTo(ChronoUnit.MINUTES);
+
+        // Adjustment rules
+        if (eventType == EventType.CLOCK_IN) {
+            if (originalTimestamp.isBefore(shiftStart) && originalTimestamp.isAfter(shiftStart.minusMinutes(roundInterval))) {
+                adjustedTimestamp = shiftStart;
+                adjustmentType = PunchAdjustmentType.SHIFT_START;
+            } else if (originalTimestamp.isAfter(shiftStart) && originalTimestamp.isBefore(shiftStart.plusMinutes(gracePeriod))) {
+                adjustedTimestamp = shiftStart;
+                adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+            } else if (originalTimestamp.isAfter(shiftStart.plusMinutes(gracePeriod)) && originalTimestamp.isBefore(shiftStart.plusMinutes(dockPenalty))) {
+                adjustedTimestamp = shiftStart.plusMinutes(dockPenalty);
+                adjustmentType = PunchAdjustmentType.SHIFT_DOCK;
+            } else if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
+                adjustedTimestamp = lunchStop;
+                adjustmentType = PunchAdjustmentType.LUNCH_STOP;
+            }
+        } 
+        else if (eventType == EventType.CLOCK_OUT) {
+            if (originalTimestamp.isAfter(shiftStop) && originalTimestamp.isBefore(shiftStop.plusMinutes(roundInterval))) {
+                adjustedTimestamp = shiftStop;
+                adjustmentType = PunchAdjustmentType.SHIFT_STOP;
+            } else if (originalTimestamp.isBefore(shiftStop) && originalTimestamp.isAfter(shiftStop.minusMinutes(gracePeriod))) {
+                adjustedTimestamp = shiftStop;
+                adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+            } else if (originalTimestamp.isBefore(shiftStop.minusMinutes(gracePeriod)) && originalTimestamp.isAfter(shiftStop.minusMinutes(dockPenalty))) {
+                adjustedTimestamp = shiftStop.minusMinutes(dockPenalty);
+                adjustmentType = PunchAdjustmentType.SHIFT_DOCK;
+            } else if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
+                adjustedTimestamp = lunchStart;
+                adjustmentType = PunchAdjustmentType.LUNCH_START;
+            }
+        }
+
+        // Apply rounding if no specific adjustment rule was applied
+        if (adjustmentType == PunchAdjustmentType.NONE) {
+            long minutes = adjustedTimestamp.getMinute();
+            long roundedMinutes = Math.round((double) minutes / roundInterval) * roundInterval;
+            adjustedTimestamp = adjustedTimestamp.withMinute((int) roundedMinutes).withSecond(0).withNano(0);
+            adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+        }
     }
 
     @Override
@@ -75,7 +128,7 @@ public class Punch {
     public String printAdjusted() {
         StringBuilder s = new StringBuilder();
         s.append('#').append(badge.getId()).append(' ');
-        s.append(eventType).append(": ").append(originalTimestamp.format(formatter).toUpperCase());
+        s.append(eventType).append(": ").append(adjustedTimestamp.format(formatter).toUpperCase());
 
         return s.toString();
     }

@@ -13,7 +13,10 @@ public class Shift {
     private final LocalTime lunchStart; 
     private final LocalTime lunchStop; 
     private final int lunchDuration; 
-    private final int shiftDuration; 
+    private final int shiftDuration;
+    private final int roundInterval = 15;
+    private final int gracePeriod = 5;
+    private final int dockPenalty = 15;
 
     // Constructor to initialize the Shift object using a HashMap.
     public Shift(HashMap<String, String> shiftData) {
@@ -58,6 +61,18 @@ public class Shift {
 
     public int getShiftDuration() {
         return shiftDuration;
+    }
+    
+    public int getRoundInterval() {
+        return roundInterval;
+    }
+    
+    public int getGracePeriod() {
+        return gracePeriod;
+    }
+    
+    public int getDockPenalty() {
+        return dockPenalty;
     }
 
     // toString to describe shift
