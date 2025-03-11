@@ -114,19 +114,21 @@ public class Punch {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder();
-        s.append('#').append(badge.getId()).append(' ');
-        s.append(eventType).append(": ").append(printOriginal());
-        return s.toString();
+        return printOriginal();
     }
     
     // Test String to visualize an output -> "#D2C39273 CLOCK IN: WED 09/05/2018 07:00:07"
     public String printOriginal() {
-        String ots = originalTimestamp.format(formatter).toUpperCase();
-        return ots;
+        StringBuilder s = new StringBuilder();
+        s.append('#').append(badge.getId()).append(' ');
+        s.append(eventType).append(": ").append(originalTimestamp.format(formatter).toUpperCase());
+        return s.toString();
     }
     public String printAdjusted() {
-        String ats = adjustedTimestamp.format(formatter).toUpperCase();
-        return ats;
+        StringBuilder s = new StringBuilder();
+        s.append('#').append(badge.getId()).append(' ');
+        s.append(eventType).append(": ").append(adjustedTimestamp.format(formatter).toUpperCase());
+        s.append(" (").append(adjustmentType).append(')');
+        return s.toString();
     }
 }
