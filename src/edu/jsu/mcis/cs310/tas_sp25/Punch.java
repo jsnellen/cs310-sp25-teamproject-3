@@ -122,14 +122,13 @@ public class Punch {
         StringBuilder s = new StringBuilder();
         s.append('#').append(badge.getId()).append(' ');
         s.append(eventType).append(": ").append(originalTimestamp.format(formatter).toUpperCase());
-
         return s.toString();
     }
     public String printAdjusted() {
         StringBuilder s = new StringBuilder();
         s.append('#').append(badge.getId()).append(' ');
         s.append(eventType).append(": ").append(adjustedTimestamp.format(formatter).toUpperCase());
-
+        s.append(" (").append(adjustmentType).append(')');
         return s.toString();
     }
 }
