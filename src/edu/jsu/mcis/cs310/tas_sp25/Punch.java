@@ -7,11 +7,11 @@ import java.time.temporal.ChronoUnit;
 public class Punch {
     
     private int id;
-    private int terminalId;
-    private Badge badge;
-    private LocalDateTime originalTimestamp;
+    private final int terminalId;
+    private final Badge badge;
+    private final LocalDateTime originalTimestamp;
     private LocalDateTime adjustedTimestamp;
-    private EventType eventType;
+    private final EventType eventType;
     private PunchAdjustmentType adjustmentType;
     
     // date time format and formatter
