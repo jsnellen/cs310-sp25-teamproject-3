@@ -75,7 +75,7 @@ public class Punch {
     adjustmentType = PunchAdjustmentType.NONE;
     adjustedTimestamp = originalTimestamp.truncatedTo(ChronoUnit.MINUTES);
 
-    // 🛠 **Clock-In Adjustments**
+    //**Clock-In Adjustments**
     if (eventType == EventType.CLOCK_IN) {
         if (originalTimestamp.equals(shiftStart)) {  // 🔥 Exact match
             adjustedTimestamp = shiftStart;
@@ -99,7 +99,7 @@ public class Punch {
         }
     } 
 
-    // 🛠 **Clock-Out Adjustments**
+    // **Clock-Out Adjustments**
     else if (eventType == EventType.CLOCK_OUT) {
         if (originalTimestamp.isAfter(shiftStop) && originalTimestamp.isBefore(shiftStop.plusMinutes(roundInterval))) {
             adjustedTimestamp = shiftStop;
@@ -119,7 +119,7 @@ public class Punch {
         }
     }
 
-    // 🔁 **Final Rounding Check**
+    // **Final Rounding Check**
     if (adjustmentType == PunchAdjustmentType.NONE) {
         long minutes = adjustedTimestamp.getMinute();
         long roundedMinutes = Math.round((double) minutes / roundInterval) * roundInterval;
@@ -134,7 +134,7 @@ public class Punch {
         }
     }
 
-    // Debug output (optional)
+    // Debug output
     System.out.println("Adjusted Timestamp: " + adjustedTimestamp);
     System.out.println("Adjustment Type: " + adjustmentType);
 }
