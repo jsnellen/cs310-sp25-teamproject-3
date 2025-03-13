@@ -59,73 +59,62 @@ public class Punch {
     }
     //adjust method
     public void adjust(Shift shift) {
-       
-        if (shift == null || originalTimestamp == null) return;
+    if (shift == null || originalTimestamp == null) return;
 
     // Get shift details
-        LocalDateTime shiftStart = originalTimestamp.with(shift.getStart());
-        LocalDateTime shiftStop = originalTimestamp.with(shift.getStop());
-        LocalDateTime lunchStart = originalTimestamp.with(shift.getLunchStart());
-        LocalDateTime lunchStop = originalTimestamp.with(shift.getLunchStop());
+    LocalDateTime shiftStart = originalTimestamp.with(shift.getStart());
+    LocalDateTime shiftStop = originalTimestamp.with(shift.getStop());
+    LocalDateTime lunchStart = originalTimestamp.with(shift.getLunchStart());
+    LocalDateTime lunchStop = originalTimestamp.with(shift.getLunchStop());
 
-        int roundInterval = shift.getRoundInterval();
-        int gracePeriod = shift.getGracePeriod();
-        int dockPenalty = shift.getDockPenalty();
+    int roundInterval = shift.getRoundInterval();
+    int gracePeriod = shift.getGracePeriod();
+    int dockPenalty = shift.getDockPenalty();
 
     // Default adjustment type is None
-        adjustmentType = PunchAdjustmentType.NONE;
-        adjustedTimestamp = originalTimestamp.truncatedTo(ChronoUnit.MINUTES);
+    adjustmentType = PunchAdjustmentType.NONE;
+    adjustedTimestamp = originalTimestamp.truncatedTo(ChronoUnit.MINUTES);
 
     // Adjustment rules
-        if (eventType == EventType.CLOCK_IN) {
-            if (originalTimestamp.equals(shiftStart)) {  // Exact match
-                adjustedTimestamp = shiftStart;
-                adjustmentType = PunchAdjustmentType.SHIFT_START;
-            } 
-        else if (originalTimestamp.isBefore(shiftStart) && originalTimestamp.isAfter(shiftStart.minusMinutes(roundInterval))) {
+    if (eventType == EventType.CLOCK_IN) {
+        if (originalTimestamp.equals(shiftStart)) {  // Exact match
             adjustedTimestamp = shiftStart;
             adjustmentType = PunchAdjustmentType.SHIFT_START;
-        } 
-        else if (originalTimestamp.isAfter(shiftStart) && originalTimestamp.isBefore(shiftStart.plusMinutes(gracePeriod))) {
+        } else if (originalTimestamp.isBefore(shiftStart) && originalTimestamp.isAfter(shiftStart.minusMinutes(roundInterval))) {
             adjustedTimestamp = shiftStart;
             adjustmentType = PunchAdjustmentType.SHIFT_START;
-        } 
-        else if (originalTimestamp.isAfter(shiftStart.plusMinutes(gracePeriod)) && originalTimestamp.isBefore(shiftStart.plusMinutes(dockPenalty))) {
+        } else if (originalTimestamp.isAfter(shiftStart) && originalTimestamp.isBefore(shiftStart.plusMinutes(gracePeriod))) {
+            adjustedTimestamp = shiftStart;
+            adjustmentType = PunchAdjustmentType.SHIFT_START;
+        } else if (originalTimestamp.isAfter(shiftStart.plusMinutes(gracePeriod)) && originalTimestamp.isBefore(shiftStart.plusMinutes(dockPenalty))) {
             adjustedTimestamp = shiftStart.plusMinutes(dockPenalty);
             adjustmentType = PunchAdjustmentType.SHIFT_DOCK;
-        } 
-        else if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
+        } else if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
             adjustedTimestamp = lunchStop;
             adjustmentType = PunchAdjustmentType.LUNCH_STOP;
         }
-    }
-    
-    // Clock out adjustments
-        else if (eventType == EventType.CLOCK_OUT) {
-            if (originalTimestamp.isAfter(shiftStop) && originalTimestamp.isBefore(shiftStop.plusMinutes(roundInterval))) {
-                adjustedTimestamp = shiftStop;
-                adjustmentType = PunchAdjustmentType.SHIFT_STOP;
-        } 
-        else if (originalTimestamp.isBefore(shiftStop) && originalTimestamp.isAfter(shiftStop.minusMinutes(gracePeriod))) {
+    } else if (eventType == EventType.CLOCK_OUT) {
+        if (originalTimestamp.isAfter(shiftStop) && originalTimestamp.isBefore(shiftStop.plusMinutes(roundInterval))) {
+            adjustedTimestamp = shiftStop;
+            adjustmentType = PunchAdjustmentType.SHIFT_STOP;
+        } else if (originalTimestamp.isBefore(shiftStop) && originalTimestamp.isAfter(shiftStop.minusMinutes(gracePeriod))) {
             adjustedTimestamp = shiftStop;
             adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
-        } 
-        else if (originalTimestamp.isBefore(shiftStop.minusMinutes(gracePeriod)) && originalTimestamp.isAfter(shiftStop.minusMinutes(dockPenalty))) {
+        } else if (originalTimestamp.isBefore(shiftStop.minusMinutes(gracePeriod)) && originalTimestamp.isAfter(shiftStop.minusMinutes(dockPenalty))) {
             adjustedTimestamp = shiftStop.minusMinutes(dockPenalty);
             adjustmentType = PunchAdjustmentType.SHIFT_DOCK;
-        } 
-        else if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
+        } else if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
             adjustedTimestamp = lunchStart;
             adjustmentType = PunchAdjustmentType.LUNCH_START;
         }
     }
 
-    // Separate handling for lunchStart and lunchStop-If no adjustment has been made, this code checks if the timestamp is during lunch and, if so, adjusts it to the lunch stop time.
-        if (adjustmentType == PunchAdjustmentType.NONE) {
-            if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
-                adjustedTimestamp = lunchStop;
-                adjustmentType = PunchAdjustmentType.LUNCH_STOP;
-            } else {
+    // Separate handling for lunchStart and lunchStop
+    if (adjustmentType == PunchAdjustmentType.NONE) {
+        if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
+            adjustedTimestamp = lunchStop;
+            adjustmentType = PunchAdjustmentType.LUNCH_STOP;
+        } else {
             // Final rounding check
             int minutes = adjustedTimestamp.getMinute();
             int roundedMinutes = ((minutes + roundInterval / 2) / roundInterval) * roundInterval;
@@ -144,24 +133,34 @@ public class Punch {
 // toString method-formats and returns a string that includes the badge ID, event type, day of the week in uppercase, and the original timestamp.
 //***FS-The tests are failing due to output formatting. EX: expected:<[#08D01475 CLOCK IN: TUE] 09/18/2018 11:59:33> but was:<[Tue] 09/18/2018 11:59:33>
     @Override
-    public String toString() {
+public String toString() {
     DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE");
     String dayOfWeek = originalTimestamp.format(dayFormatter).toUpperCase();
-    String formattedTimestamp = originalTimestamp.format(formatter);
-    return "[#" + badge.getId() + " " + eventType.toString() + ": " + dayOfWeek + "] " + formattedTimestamp;
+    DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+    String formattedTimestamp = originalTimestamp.format(timestampFormatter);
+    return "#" + badge.getId() + " " + eventType.toString() + ": " + dayOfWeek + " " + formattedTimestamp;
 }
+
     // Method to print original timestamp
-    public String printOriginal() {
-        return originalTimestamp.format(formatter);
-    }
+   public String printOriginal() {
+    DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE");
+    String dayOfWeek = originalTimestamp.format(dayFormatter).toUpperCase();
+    DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+    String formattedTimestamp = originalTimestamp.format(timestampFormatter);
+    return "#" + badge.getId() + " " + eventType.toString() + ": " + dayOfWeek + " " + formattedTimestamp;
+}
 
     // Method to print adjusted timestamp
-    public String printAdjusted() {
-        if (adjustedTimestamp != null) {
-            return adjustedTimestamp.format(formatter) + " (" + adjustmentType + ")";
-        } else {
-            return "No adjustment";
-        }
+    
+public String printAdjusted() {
+    if (adjustedTimestamp != null) {
+        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE");
+        String dayOfWeek = adjustedTimestamp.format(dayFormatter).toUpperCase();
+        DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+        String formattedTimestamp = adjustedTimestamp.format(timestampFormatter);
+        return "#" + badge.getId() + " " + eventType.toString() + ": " + dayOfWeek + " " + formattedTimestamp + " (" + adjustmentType + ")";
+    } else {
+        return "No adjustment";
     }
 }
 
@@ -219,3 +218,4 @@ public class Punch {
 }
 }
 */
+}
