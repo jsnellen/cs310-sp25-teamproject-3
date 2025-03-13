@@ -7,7 +7,6 @@ import java.util.*;
 import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 import com.github.cliftonlabs.json_simple.*;
-import edu.jsu.mcis.cs310.tas_sp25.*;
 
 /**
  * 
@@ -86,6 +85,5 @@ public final class DAOUtility {
 
         // Calculate duration in minutes
         return (int) Duration.between(startTime, endTime).toMinutes();
-
     }
 }
