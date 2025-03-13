@@ -5,77 +5,131 @@ import java.sql.*;
 import java.time.*;
 import java.util.ArrayList;
 
-
-public class EmployeeDAO{
-//Declare class instance variables 
+public class EmployeeDAO {
     private final DAOFactory daoFactory;
-    private static final String QUERY_FIND = "SELECT * FROM Employee WHERE id = ?";
-    private static final String QUERY_FIND_BY_BADGE = "SELECT * FROM Employee WHERE badgeid = ?";
-    // Constructor
-    public EmployeeDAO(DAOFactory daoFactory) {
+    
+    // Query Statements
+    private static final String QUERY_FIND_NUMID = "SELECT * FROM employee WHERE id = ?";
+    // *** Query can be adjusted for simplicity ***
+    private static final String QUERY_FIND_BADGEID = "SELECT * FROM employee WHERE badgeid = ?";
+    
+    // constructor for PunchDAO
+    EmployeeDAO(DAOFactory daoFactory) {
         this.daoFactory = daoFactory;
     }
     // Method for finding a specific employee with a numerical id
     public Employee find(int id) {
         Employee employee = null;
-        
-        try (Connection conn = daoFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(QUERY_FIND)) {
-
-            ps.setInt(1, id);
-            System.out.println("Executing query: " + ps.toString()); // Add this line for logging
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    employee = extractEmployeeFromResultSet(rs);
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+                
+        try {
+            // create connection to Database and set up prepared statement
+            Connection conn = daoFactory.getConnection();
+            if (conn.isValid(0)) {
+                ps = conn.prepareStatement(QUERY_FIND_NUMID);
+                ps.setInt(1, id);
+                
+                //determine if it returned results
+                boolean hasResults = ps.execute();
+                if(hasResults){
+                    rs = ps.getResultSet();
+                    if (rs.next()) {
+                    // get values to be stored in employee
+                    String firstname = rs.getString("firstname");
+                    String middlename = rs.getString("middlename");
+                    String lastname = rs.getString("lastname");
+                    LocalDateTime active = rs.getTimestamp("active").toLocalDateTime();
+                    String badgeID = rs.getString("badgeid");
+                    int deptID = rs.getInt("departmentid");
+                    int shiftID = rs.getInt("shiftid");
+                    int empTypeID = rs.getInt("employeetypeid");
+                    // use the IDs to get the corresponding objects
+                    Badge badge = daoFactory.getBadgeDAO().find(badgeID);
+                    Department department = daoFactory.getDepartmentDAO().find(deptID);
+                    Shift shift = daoFactory.getShiftDAO().find(shiftID);
+                    EmployeeType employeeType = EmployeeType.values()[empTypeID];
+                    employee = new Employee(id, firstname, middlename, lastname, active, badge, department, shift, employeeType);
+                    }
                 }
             }
         } catch (SQLException e) {
             throw new DAOException(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    throw new DAOException(e.getMessage());
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    throw new DAOException(e.getMessage());
+                }
+            }
         }
         return employee;
     }
-
-    // Method for finding a single employee using a badge id
-    public Employee find(Badge id) {
+    
+    // method for finding a single employee using a badge id
+    public Employee find(Badge id){
         Employee employee = null;
-        
-        try (Connection conn = daoFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(QUERY_FIND_BY_BADGE)) {
-
-            ps.setString(1, id.getId());
-            System.out.println("Executing query: " + ps.toString()); // Add this line for logging
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    employee = extractEmployeeFromResultSet(rs);
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+                
+        try {
+            // create connection to Database and set up prepared statement
+            Connection conn = daoFactory.getConnection();
+            if (conn.isValid(0)) {
+                ps = conn.prepareStatement(QUERY_FIND_BADGEID);
+                 ps.setString(1, id.getId()); // Set the badge ID parameter
+                
+                //determine if it returned results
+                boolean hasResults = ps.execute();
+                if(hasResults){
+                    rs = ps.getResultSet();
+                    if (rs.next()) {
+                    // get values to be stored in employee
+                    // *** Can be adjusted for simplicity ***
+                    int empid = rs.getInt("id");
+                    String firstname = rs.getString("firstname");
+                    String middlename = rs.getString("middlename");
+                    String lastname = rs.getString("lastname");
+                    LocalDateTime active = rs.getTimestamp("active").toLocalDateTime();
+                    String badgeID = rs.getString("badgeid");
+                    int deptID = rs.getInt("departmentid");
+                    int shiftID = rs.getInt("shiftid");
+                    int empTypeID = rs.getInt("employeetypeid");
+                    // use the IDs to get the corresponding objects
+                    Badge badge = daoFactory.getBadgeDAO().find(badgeID);
+                    Department department = daoFactory.getDepartmentDAO().find(deptID);
+                    Shift shift = daoFactory.getShiftDAO().find(shiftID);
+                    EmployeeType employeeType = EmployeeType.values()[empTypeID];
+                    employee = new Employee(empid, firstname, middlename, lastname, active, badge, department, shift, employeeType);
+                    }
                 }
             }
         } catch (SQLException e) {
             throw new DAOException(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    throw new DAOException(e.getMessage());
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    throw new DAOException(e.getMessage());
+                }
+            }
         }
         return employee;
-    }
-
-    // Helper method to extract employee details from ResultSet
-    private Employee extractEmployeeFromResultSet(ResultSet rs) throws SQLException {
-        int empid = rs.getInt("id");
-        String firstname = rs.getString("firstname");
-        String middlename = rs.getString("middlename");
-        String lastname = rs.getString("lastname");
-        LocalDateTime active = rs.getTimestamp("active").toLocalDateTime();
-        String badgeID = rs.getString("badgeid");
-        int deptID = rs.getInt("departmentid");
-        int shiftID = rs.getInt("shiftid");
-        int empTypeID = rs.getInt("employeetypeid");
-
-        Badge badge = daoFactory.getBadgeDAO().find(badgeID);
-        Department department = daoFactory.getDepartmentDAO().find(deptID);
-        Shift shift = daoFactory.getShiftDAO().find(shiftID);
-        EmployeeType employeeType = EmployeeType.values()[empTypeID];
-
-        return new Employee(empid, firstname, middlename, lastname, active, badge, department, shift, employeeType);
     }
 }
-
-
