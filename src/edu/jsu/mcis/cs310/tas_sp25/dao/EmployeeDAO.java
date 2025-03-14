@@ -40,8 +40,9 @@ public class EmployeeDAO{
     public Employee find(Badge id) {
         Employee employee = null;
         
-        try (Connection conn = daoFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(QUERY_FIND_BY_BADGE)) {
+        try{
+            Connection conn = daoFactory.getConnection();
+            PreparedStatement ps = conn.prepareStatement(QUERY_FIND_BY_BADGE);
 
             ps.setString(1, id.getId());
             System.out.println("Executing query: " + ps.toString()); // Add this line for logging
