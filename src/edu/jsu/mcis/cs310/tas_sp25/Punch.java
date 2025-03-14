@@ -49,6 +49,10 @@ public class Punch {
     public LocalDateTime getAdjustedTimestamp() { return adjustedTimestamp; }
     public EventType getPunchtype() { return eventType; }
     public PunchAdjustmentType getAdjustmentType() { return adjustmentType; }
+    
+    public String getTimestampAsString(LocalDateTime timestamp){
+        return timestamp.format(formatter);
+    }
 
     public void setAdjustedTimestamp(LocalDateTime adjustedTimestamp) {
         this.adjustedTimestamp = adjustedTimestamp;

@@ -32,8 +32,8 @@ public final class DAOUtility {
             punchData.put("terminalid", String.valueOf(punch.getTerminalid()) );
             punchData.put("punchtype", punch.getPunchtype().toString() );
             punchData.put("adjustmenttype", punch.getAdjustmentType().toString() );
-            punchData.put("originaltimestamp", punch.printOriginal());
-            punchData.put("adjustedtimestamp", punch.printAdjusted());
+            punchData.put("originaltimestamp", punch.getTimestampAsString(punch.getOriginaltimestamp()));
+            punchData.put("adjustedtimestamp", punch.getTimestampAsString(punch.getAdjustedTimestamp()));
             
             // add punchData to jsonData
             jsonData.add(punchData);
