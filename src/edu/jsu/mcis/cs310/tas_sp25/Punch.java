@@ -1,5 +1,6 @@
 package edu.jsu.mcis.cs310.tas_sp25;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -78,9 +79,14 @@ public class Punch {
         // Default adjustment type is None
         adjustmentType = PunchAdjustmentType.NONE;
         adjustedTimestamp = originalTimestamp.truncatedTo(ChronoUnit.MINUTES);
+        
+        // Check if the day is a weekend
+        DayOfWeek dayOfWeek = originalTimestamp.getDayOfWeek();
+        boolean isWeekend = (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY);
 
         // Adjustment rules
         if (eventType == EventType.CLOCK_IN) {
+            System.out.println("originalTimeStamp, shiftStart: " + originalTimestamp.toString() + shiftStart);
             if (originalTimestamp.equals(shiftStart)) {  // Exact match
                 adjustedTimestamp = shiftStart;
                 adjustmentType = PunchAdjustmentType.SHIFT_START;
@@ -97,22 +103,41 @@ public class Punch {
                 adjustedTimestamp = lunchStop;
                 adjustmentType = PunchAdjustmentType.LUNCH_STOP;
             }
+            else if (originalTimestamp.isAfter(lunchStop)&&originalTimestamp.isBefore(shiftStop.minusMinutes(dockPenalty))){
+            adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+            int min = originalTimestamp.getMinute();
+            float sec = originalTimestamp.getSecond();
+            float temp = (min + (sec/60) +(roundInterval/2))/roundInterval;
+            int round = Math.round(temp)*roundInterval;
+            int adjust = round-min;
+            adjustedTimestamp = adjustedTimestamp.plusMinutes(adjust);
+        }
         } else if (eventType == EventType.CLOCK_OUT) {
             if (originalTimestamp.isAfter(shiftStop) && originalTimestamp.isBefore(shiftStop.plusMinutes(roundInterval))) {
                 adjustedTimestamp = shiftStop;
                 adjustmentType = PunchAdjustmentType.SHIFT_STOP;
             } else if (originalTimestamp.isBefore(shiftStop) && originalTimestamp.isAfter(shiftStop.minusMinutes(gracePeriod))) {
                 adjustedTimestamp = shiftStop;
-                adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
-            } else if (originalTimestamp.isBefore(shiftStop.minusMinutes(gracePeriod)) && originalTimestamp.isAfter(shiftStop.minusMinutes(dockPenalty))) {
+                adjustmentType = PunchAdjustmentType.SHIFT_STOP;
+            } else if (originalTimestamp.isBefore(shiftStop.minusMinutes(gracePeriod)) && originalTimestamp.compareTo(shiftStop.minusMinutes(dockPenalty))>=0) {
                 adjustedTimestamp = shiftStop.minusMinutes(dockPenalty);
                 adjustmentType = PunchAdjustmentType.SHIFT_DOCK;
             } else if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
                 adjustedTimestamp = lunchStart;
                 adjustmentType = PunchAdjustmentType.LUNCH_START;
             }
+            else if (originalTimestamp.isAfter(lunchStop)&&originalTimestamp.isBefore(shiftStop.minusMinutes(dockPenalty))){
+            adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+            int min = originalTimestamp.getMinute();
+            float sec = originalTimestamp.getSecond();
+            float temp = (min + (sec/60) +(roundInterval/2))/roundInterval;
+            int round = Math.round(temp)*roundInterval;
+            int adjust = round-min;
+            adjustedTimestamp = adjustedTimestamp.plusMinutes(adjust);
         }
-
+        }
+            
+/*
         // Separate handling for lunchStart and lunchStop
         if (adjustmentType == PunchAdjustmentType.NONE) {
             if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
@@ -132,6 +157,7 @@ public class Punch {
                         // calculate nearest interval down
                     }
                     */
+/*
                 }
                 else if (roundedMinutes >= (roundInterval / 2)){
                     // calculate nearest interval up
@@ -155,10 +181,13 @@ public class Punch {
             }
         }
     }
+*/
+
+    }
     // toString method-formats and returns a string that includes the badge ID, event type, day of the week in uppercase, and the original timestamp.
     //***FS-The tests are failing due to output formatting. EX: expected:<[#08D01475 CLOCK IN: TUE] 09/18/2018 11:59:33> but was:<[Tue] 09/18/2018 11:59:33>
     @Override
-    public String toString() {
+    public String toString(){
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE");
         String dayOfWeek = originalTimestamp.format(dayFormatter).toUpperCase();
         DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");

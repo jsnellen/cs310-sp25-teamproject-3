@@ -118,12 +118,11 @@ public class PunchAdjustTest {
         ShiftDAO shiftDAO = daoFactory.getShiftDAO();
 
         Shift s2 = shiftDAO.find(2);
-
+        
         Punch p1 = punchDAO.find(5463);
         Punch p2 = punchDAO.find(5541);
 
         /* Adjust Punches According to Shift Rulesets */
-        
         p1.adjust(s2);
         p2.adjust(s2);
 
