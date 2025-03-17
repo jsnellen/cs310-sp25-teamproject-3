@@ -27,9 +27,10 @@ public final class DAOUtility {
         for (Punch punch : dailypunchlist){
             // copy data from dailypunchlist into punchData
             JsonObject punchData = new JsonObject();
+            punchData.put("terminalid", String.valueOf(punch.getTerminalid()) );
             punchData.put("id", String.valueOf(punch.getId()) );
             punchData.put("badgeid", punch.getBadge().getId());
-            punchData.put("terminalid", String.valueOf(punch.getTerminalid()) );
+            //punchData.put("terminalid", String.valueOf(punch.getTerminalid()) );
             punchData.put("punchtype", punch.getPunchtype().toString() );
             punchData.put("adjustmenttype", punch.getAdjustmentType().toString() );
             punchData.put("originaltimestamp", punch.getTimestampAsString(punch.getOriginaltimestamp()));

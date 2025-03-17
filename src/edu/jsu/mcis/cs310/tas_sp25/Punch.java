@@ -52,7 +52,7 @@ public class Punch {
     public PunchAdjustmentType getAdjustmentType() { return adjustmentType; }
     
     public String getTimestampAsString(LocalDateTime timestamp){
-        return timestamp.format(formatter);
+        return timestamp.format(formatter).toUpperCase();
     }
 
     public void setAdjustedTimestamp(LocalDateTime adjustedTimestamp) {
@@ -188,30 +188,25 @@ public class Punch {
     //***FS-The tests are failing due to output formatting. EX: expected:<[#08D01475 CLOCK IN: TUE] 09/18/2018 11:59:33> but was:<[Tue] 09/18/2018 11:59:33>
     @Override
     public String toString(){
-        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE");
-        String dayOfWeek = originalTimestamp.format(dayFormatter).toUpperCase();
-        DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
-        String formattedTimestamp = originalTimestamp.format(timestampFormatter);
-        return "#" + badge.getId() + " " + eventType.toString() + ": " + dayOfWeek + " " + formattedTimestamp;
+        return printOriginal();
     }
 
     // Method to print original timestamp
    public String printOriginal() {
-    DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE");
-    String dayOfWeek = originalTimestamp.format(dayFormatter).toUpperCase();
-    DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
-    String formattedTimestamp = originalTimestamp.format(timestampFormatter);
-    return "#" + badge.getId() + " " + eventType.toString() + ": " + dayOfWeek + " " + formattedTimestamp;
+       StringBuilder s = new StringBuilder();
+            s.append("#").append(badge.getId()).append(" ").append(eventType.toString());
+            s.append(": ").append(getTimestampAsString(originalTimestamp));
+        return s.toString();
     }
 
     // Method to print adjusted timestamp
     public String printAdjusted() {
         if (adjustedTimestamp != null) {
-            DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEE");
-            String dayOfWeek = adjustedTimestamp.format(dayFormatter).toUpperCase();
-            DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
-            String formattedTimestamp = adjustedTimestamp.format(timestampFormatter);
-            return "#" + badge.getId() + " " + eventType.toString() + ": " + dayOfWeek + " " + formattedTimestamp + " (" + adjustmentType + ")";
+            StringBuilder s = new StringBuilder();
+            s.append("#").append(badge.getId()).append(" ").append(eventType.toString());
+            s.append(": ").append(getTimestampAsString(adjustedTimestamp));
+            s.append(" (").append(adjustmentType).append(")");
+            return s.toString();
         } else {
             return "No adjustment";
         }
@@ -236,39 +231,5 @@ public class Punch {
                     }
             }
     */
-    /*       
-        @Override
-        public String toString(){
-            return printOriginal();   
-        } 
-        // Test String to visualize an output -> "#D2C39273 CLOCK IN: WED 09/05/2018 07:00:07"
-        public String printOriginal() {
-            StringBuilder s = new StringBuilder();
-            s.append('#').append(badge.getId()).append(' ');
-            s.append(eventType).append(": ").append(originalTimestamp.format(formatter).toUpperCase());
-
-            return s.toString();
-        }
-        public String printAdjusted() {
-            if (adjustedTimestamp == null) {
-                return printOriginal() + " (NO ADJUSTMENT)";
-            }
-
-            StringBuilder s = new StringBuilder();
-            s.append('#').append(badge.getId()).append(' ');
-            s.append(eventType).append(": ").append(adjustedTimestamp.format(formatter).toUpperCase());
-
-            // Append adjustment type, including " (None)" explicitly when no adjustment was made
-            s.append(" (").append(adjustmentType).append(")");
-
-            return s.toString();
-        }
-
-
-
-        }
-        }
-    }
-    }
-    */
+    
 }
