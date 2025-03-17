@@ -142,7 +142,7 @@ public class Punch {
                 }
             }
         }
-/*
+        /*
         // Separate handling for lunchStart and lunchStop
         if (adjustmentType == PunchAdjustmentType.NONE) {
             if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
@@ -161,8 +161,8 @@ public class Punch {
                     } else{
                         // calculate nearest interval down
                     }
-                    */
-/*
+        */
+        /*S
                 }
                 else if (roundedMinutes >= (roundInterval / 2)){
                     // calculate nearest interval up
@@ -186,7 +186,7 @@ public class Punch {
             }
         }
     }
-*/
+        */
 
     }
     // toString method-formats and returns a string that includes the badge ID, event type, day of the week in uppercase, and the original timestamp.

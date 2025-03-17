@@ -36,8 +36,10 @@ public class ShiftDAO {
         ResultSet rs = null;
 
         try {
-            if (connection != null && connection.isValid(0)) {
-                ps = connection.prepareStatement(QUERY_FIND_BY_ID);
+            // Create connection to Database and set up prepared statement
+            Connection conn = daoFactory.getConnection();
+            if (conn != null && conn.isValid(0)) {
+                ps = conn.prepareStatement(QUERY_FIND_BY_ID);
                 ps.setInt(1, shiftId);
                 rs = ps.executeQuery();
                 
