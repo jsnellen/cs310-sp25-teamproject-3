@@ -67,10 +67,10 @@ public class Punch {
         if (shift == null || originalTimestamp == null) return;
 
         // Get shift details
-        LocalDateTime shiftStart = originalTimestamp.with(shift.getStart());
-        LocalDateTime shiftStop = originalTimestamp.with(shift.getStop());
-        LocalDateTime lunchStart = originalTimestamp.with(shift.getLunchStart());
-        LocalDateTime lunchStop = originalTimestamp.with(shift.getLunchStop());
+        LocalDateTime shiftStart = LocalDateTime.of(originalTimestamp.toLocalDate(), shift.getStart());
+        LocalDateTime shiftStop = LocalDateTime.of(originalTimestamp.toLocalDate(), shift.getStop());
+        LocalDateTime lunchStart = LocalDateTime.of(originalTimestamp.toLocalDate(), shift.getLunchStart());
+        LocalDateTime lunchStop = LocalDateTime.of(originalTimestamp.toLocalDate(), shift.getLunchStop());
 
         int roundInterval = shift.getRoundInterval();
         int gracePeriod = shift.getGracePeriod();
@@ -86,7 +86,12 @@ public class Punch {
         
         if (isWeekend){
             // Logic for weekend rounding
-            
+            adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+            int totalSeconds = originalTimestamp.getMinute() * 60 + originalTimestamp.getSecond();
+            int intervalSeconds = roundInterval * 60;
+            int roundedSeconds = Math.round((float) totalSeconds / intervalSeconds) * intervalSeconds;
+            int diffSeconds = roundedSeconds - totalSeconds;
+            adjustedTimestamp = adjustedTimestamp.plusSeconds(diffSeconds);
         }
         else{
             // Adjustment rules
@@ -142,8 +147,41 @@ public class Punch {
                 }
             }
         }
+        
+        
+        // Separate handling for lunchStart and lunchStop
+        
+        if (adjustmentType == PunchAdjustmentType.NONE) {
+            if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
+                adjustedTimestamp = (eventType == EventType.CLOCK_IN) ? lunchStop : lunchStart;
+                adjustmentType = (eventType == EventType.CLOCK_IN) ? PunchAdjustmentType.LUNCH_STOP : PunchAdjustmentType.LUNCH_START;
+            } else {
+                // Final rounding logic
+                int totalSeconds = originalTimestamp.getMinute() * 60 + originalTimestamp.getSecond();
+                int intervalSeconds = roundInterval * 60;
+                int roundedSeconds = Math.round((float) totalSeconds / intervalSeconds) * intervalSeconds;
+                int diffSeconds = roundedSeconds - totalSeconds;
+
+                if (diffSeconds != 0) {
+                    adjustedTimestamp = adjustedTimestamp.plusSeconds(diffSeconds);
+                    adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+                }
+            }
+        }
+        
+        
+        
+        
+        
         /*
         // Separate handling for lunchStart and lunchStop
+        
+        
+        
+        
+        
+        
+        
         if (adjustmentType == PunchAdjustmentType.NONE) {
             if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
                 adjustedTimestamp = lunchStop;
