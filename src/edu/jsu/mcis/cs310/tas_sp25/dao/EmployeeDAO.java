@@ -18,14 +18,19 @@ public class EmployeeDAO{
     // Method for finding a specific employee with a numerical id
     public Employee find(int id) {
         Employee employee = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         
-        try (Connection conn = daoFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(QUERY_FIND)) {
+        try {
+            Connection conn = daoFactory.getConnection();
+            ps = conn.prepareStatement(QUERY_FIND);
 
             ps.setInt(1, id);
             System.out.println("Executing query: " + ps.toString()); // Add this line for logging
-
-            try (ResultSet rs = ps.executeQuery()) {
+            
+            boolean hasResults = ps.execute();
+            if (hasResults){
+                rs = ps.getResultSet();
                 if (rs.next()) {
                     employee = extractEmployeeFromResultSet(rs);
                 }

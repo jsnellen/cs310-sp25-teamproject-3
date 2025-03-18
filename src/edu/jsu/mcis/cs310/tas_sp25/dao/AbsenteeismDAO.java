@@ -38,45 +38,45 @@ public class AbsenteeismDAO {
         "SELECT minutesmissed FROM absenteeism WHERE employeeid = ? AND date = ?";
 
     public Absenteeism find(Employee employee, LocalDate date) {
-    Absenteeism absenteeism = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
+        Absenteeism absenteeism = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
-    try (Connection conn = daoFactory.getConnection()) {
-        if (conn != null && conn.isValid(0)) {
-            ps = conn.prepareStatement(QUERY_FIND_ABSENTEEISM);
-            ps.setInt(1, employee.getId());
-            ps.setDate(2, java.sql.Date.valueOf(date));
-            rs = ps.executeQuery();
+        try {
+            Connection conn = daoFactory.getConnection();
+            if (conn != null && conn.isValid(0)) {
+                ps = conn.prepareStatement(QUERY_FIND_ABSENTEEISM);
+                ps.setInt(1, employee.getId());
+                ps.setDate(2, java.sql.Date.valueOf(date));
+                rs = ps.executeQuery();
 
-            if (rs.next()) {
-                double minutesMissed = rs.getDouble("minutesmissed");
+                if (rs.next()) {
+                    double minutesMissed = rs.getDouble("minutesmissed");
 
-                Shift shift = daoFactory.getShiftDAO().find(employee.getBadge()); 
-
-
-                int shiftDuration = (shift != null) ? shift.getShiftDuration() : 0;
-                
-                BigDecimal absenteeismPercentage = (shiftDuration > 0) 
-                ? BigDecimal.valueOf((minutesMissed / shiftDuration) * 100).setScale(2, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO;
+                    Shift shift = daoFactory.getShiftDAO().find(employee.getBadge()); 
 
 
-                absenteeism = new Absenteeism(employee, date, absenteeismPercentage);
+                    int shiftDuration = (shift != null) ? shift.getShiftDuration() : 0;
+
+                    BigDecimal absenteeismPercentage = (shiftDuration > 0) 
+                    ? BigDecimal.valueOf((minutesMissed / shiftDuration) * 100).setScale(2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+
+
+                    absenteeism = new Absenteeism(employee, date, absenteeismPercentage);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DAOException("Error finding absenteeism for Employee: " + e.getMessage());
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+            } catch (SQLException e) {
+                throw new DAOException("Error closing resources: " + e.getMessage());
             }
         }
-    } catch (SQLException e) {
-        throw new DAOException("Error finding absenteeism for Employee: " + e.getMessage());
-    } finally {
-        try {
-            if (rs != null) rs.close();
-            if (ps != null) ps.close();
-        } catch (SQLException e) {
-            throw new DAOException("Error closing resources: " + e.getMessage());
-        }
+
+        return absenteeism;
     }
-
-    return absenteeism;
-}
-
 }

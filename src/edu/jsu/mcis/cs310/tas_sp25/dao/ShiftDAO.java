@@ -17,17 +17,15 @@ import java.util.Objects;
  */
 public class ShiftDAO {
     
-    private final Connection connection;
     private final DAOFactory daoFactory;
 
     // Constructor to initialize database connection
     public ShiftDAO(DAOFactory daoFactory) {
         this.daoFactory = daoFactory;
-        this.connection = daoFactory.getConnection();
     }
     
     private static final String QUERY_FIND_BY_ID = "SELECT * FROM shift WHERE id = ?";
-    private static final String QUERY_FIND_BY_BADGE = "SELECT shiftid FROM employee WHERE badgeid = ?";
+    private static final String QUERY_FIND_BY_BADGE = "SELECT * FROM employee WHERE badgeid = ?";
 
     // Finds a Shift by Shift ID
     public Shift find(int shiftId) {
@@ -92,8 +90,9 @@ public class ShiftDAO {
         ResultSet rs = null;
 
         try {
-            if (connection != null && connection.isValid(0)) {
-                ps = connection.prepareStatement(QUERY_FIND_BY_BADGE);
+            Connection conn = daoFactory.getConnection();
+            if (conn != null && conn.isValid(0)) {
+                ps = conn.prepareStatement(QUERY_FIND_BY_BADGE);
                 ps.setString(1, badge.getId());
                 rs = ps.executeQuery();
 
