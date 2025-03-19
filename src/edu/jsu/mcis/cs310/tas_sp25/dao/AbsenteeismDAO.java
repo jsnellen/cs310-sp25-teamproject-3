@@ -53,16 +53,13 @@ public class AbsenteeismDAO {
                 if (rs.next()) {
                     double minutesMissed = rs.getDouble("minutesmissed");
 
-                    Shift shift = daoFactory.getShiftDAO().find(employee.getBadge()); 
+                    Shift shift = daoFactory.getShiftDAO().find(employee.getBadge());
+                    if (shift == null) {
+                        throw new DAOException("Shift not found for Employee ID: " + employee.getId());
+                    }
 
-
-                    int shiftDuration = (shift != null) ? shift.getShiftDuration() : 0;
-
-                    BigDecimal absenteeismPercentage = (shiftDuration > 0) 
-                    ? BigDecimal.valueOf((minutesMissed / shiftDuration) * 100).setScale(2, RoundingMode.HALF_UP)
-                    : BigDecimal.ZERO;
-
-
+                    // Call DAOUtility to get absenteeism percentage
+                    BigDecimal absenteeismPercentage = DAOUtility.calculateAbsenteeism(minutesMissed, shift.getShiftDuration());
                     absenteeism = new Absenteeism(employee, date, absenteeismPercentage);
                 }
             }
