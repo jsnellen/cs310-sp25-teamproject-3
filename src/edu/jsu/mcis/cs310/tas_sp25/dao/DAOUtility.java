@@ -7,6 +7,8 @@ import java.util.*;
 import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 import com.github.cliftonlabs.json_simple.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * 
@@ -43,41 +45,44 @@ public final class DAOUtility {
         return jsonString;
     }
     
-    public static int calculateTotalMinutes(ArrayList<Punch> dailypunchlist, Shift shift) {
-        int totalMinutes = 0;
-        boolean isClockedIn = false;
-        Punch clockInPunch = null;
+    public static int calculateTotalMinutes(ArrayList<Punch> punchlist, Shift shift) {
+    int totalMinutes = 0;
+    boolean isClockedIn = false;
+    Punch clockInPunch = null;
 
-        for (Punch punch : dailypunchlist) {
-            switch (punch.getPunchtype()) {
-                case CLOCK_IN:
-                    if (!isClockedIn) {
-                        clockInPunch = punch;
-                        isClockedIn = true;
-                    }
-                    break;
+    // Sort punches by timestamp to ensure correct order
+    punchlist.sort(Comparator.comparing(Punch::getAdjustedTimestamp));
 
-                case CLOCK_OUT:
-                    if (isClockedIn) {
-                        totalMinutes += calculateDuration(clockInPunch, punch);
-                        isClockedIn = false;
-                    }
-                    break;
+    for (Punch punch : punchlist) {
+        switch (punch.getPunchtype()) {
+            case CLOCK_IN:
+                if (!isClockedIn) {
+                    clockInPunch = punch;
+                    isClockedIn = true;
+                }
+                break;
 
-                case TIME_OUT:
-                    // Skip "time out" punches
+            case CLOCK_OUT:
+                if (isClockedIn) {
+                    totalMinutes += calculateDuration(clockInPunch, punch);
                     isClockedIn = false;
-                    break;
-            }
-        }
+                }
+                break;
 
-        // Deduct lunch break if applicable
-        if (totalMinutes > shift.getShiftDuration() && shift.getLunchDuration() > 0) {
-            totalMinutes -= shift.getLunchDuration();
+            case TIME_OUT:
+                // Skip "time out" punches
+                isClockedIn = false;
+                break;
         }
-
-        return totalMinutes;
     }
+
+    // Deduct lunch break if applicable
+    if (totalMinutes > shift.getShiftDuration() && shift.getLunchDuration() > 0) {
+        totalMinutes -= shift.getLunchDuration();
+    }
+
+    return totalMinutes;
+}
 
     private static int calculateDuration(Punch start, Punch end) {
         LocalDateTime startTime = start.getAdjustedTimestamp();
@@ -85,5 +90,25 @@ public final class DAOUtility {
 
         // Calculate duration in minutes
         return (int) Duration.between(startTime, endTime).toMinutes();
+    }
+    
+   public static BigDecimal calculateAbsenteeism(ArrayList<Punch> punchlist, Shift shift) {
+    // Calculate total minutes worked by the employee
+    int totalMinutesWorked = calculateTotalMinutes(punchlist, shift);
+
+    // Calculate total minutes scheduled to work
+    int totalMinutesScheduled = shift.getShiftDuration() * 5; // 5 working days per pay period
+
+    // Handle edge case: Avoid division by zero
+    if (totalMinutesScheduled == 0) {
+        return BigDecimal.ZERO;
+    }
+
+    // Calculate absenteeism percentage
+    BigDecimal absenteeismPercentage = new BigDecimal(totalMinutesScheduled - totalMinutesWorked)
+            .divide(new BigDecimal(totalMinutesScheduled), 4, RoundingMode.HALF_UP)
+            .multiply(new BigDecimal(100));
+
+    return absenteeismPercentage;
     }
 }

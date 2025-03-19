@@ -26,14 +26,14 @@ import java.math.RoundingMode;
  * Data Access Object for Absenteeism
  */
 public class AbsenteeismDAO {
-    
+
     private final DAOFactory daoFactory;
 
     // Constructor to initialize database connection
     public AbsenteeismDAO(DAOFactory daoFactory) {
         this.daoFactory = daoFactory;
     }
-    
+
     private static final String QUERY_FIND_ABSENTEEISM = 
         "SELECT minutesmissed FROM absenteeism WHERE employeeid = ? AND date = ?";
 
