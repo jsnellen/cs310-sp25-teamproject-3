@@ -270,25 +270,4 @@ public class Punch {
             return "No adjustment";
         }
     }
-
-    /*Leaving these here in case needed in the future --FS       
-            if (adjustmentType == PunchAdjustmentType.NONE) {
-                long minutes = adjustedTimestamp.getMinute();
-                long lowerBound = (long) (Math.floor((double) minutes / roundInterval) * roundInterval);
-                long upperBound = (long) (Math.ceil((double) minutes / roundInterval) * roundInterval);
-
-                // Determine which bound is closer
-                long roundedMinutes = (minutes - lowerBound < upperBound - minutes) ? lowerBound : upperBound;
-
-                    if (minutes != roundedMinutes) {  // Ensure we only round if needed
-                        if (roundedMinutes >= 60) {
-                            adjustedTimestamp = adjustedTimestamp.plusHours(1).withMinute(0);
-                        } else {
-                         adjustedTimestamp = adjustedTimestamp.withMinute((int) roundedMinutes).withSecond(0).withNano(0);
-                        }
-            adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
-                    }
-            }
-    */
-    
 }
