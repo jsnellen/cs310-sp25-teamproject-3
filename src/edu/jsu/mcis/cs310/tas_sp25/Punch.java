@@ -4,6 +4,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 
 public class Punch {
     
@@ -16,10 +17,10 @@ public class Punch {
     private PunchAdjustmentType adjustmentType;
  
     // Date time format and formatter
-    String dateTimeFormat = "EEE MM/dd/yyyy HH:mm:ss";
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateTimeFormat);
-
-    // Constructor for new punch
+    private String dateTimeFormat = "EEE MM/dd/yyyy HH:mm:ss";
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateTimeFormat);
+    
+    // Constructor
     public Punch(int terminalId, Badge badge, EventType eventType) {
         this.terminalId = terminalId;
         this.badge = badge;
@@ -86,12 +87,8 @@ public class Punch {
         
         if (isWeekend){
             // Logic for weekend rounding
-            adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
-            int totalSeconds = originalTimestamp.getMinute() * 60 + originalTimestamp.getSecond();
-            int intervalSeconds = roundInterval * 60;
-            int roundedSeconds = Math.round((float) totalSeconds / intervalSeconds) * intervalSeconds;
-            int diffSeconds = roundedSeconds - totalSeconds;
-            adjustedTimestamp = adjustedTimestamp.plusSeconds(diffSeconds);
+            // *** LINE ADDED BY JORDAN *** \\
+            calculateRounding(roundInterval);
         }
         else{
             // Adjustment rules
@@ -114,14 +111,10 @@ public class Punch {
                     adjustmentType = PunchAdjustmentType.LUNCH_STOP;
                 }
                 else if (originalTimestamp.isAfter(lunchStop)&&originalTimestamp.isBefore(shiftStop.minusMinutes(dockPenalty))){
-                adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
-                int min = originalTimestamp.getMinute();
-                float sec = originalTimestamp.getSecond();
-                float temp = (min + (sec/60) +(roundInterval/2))/roundInterval;
-                int round = Math.round(temp)*roundInterval;
-                int adjust = round-min;
-                adjustedTimestamp = adjustedTimestamp.plusMinutes(adjust);
-            }
+                    adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+                    // *** LINE ADDED BY JORDAN *** \\
+                    calculateRounding(roundInterval);
+                }
             } else if (eventType == EventType.CLOCK_OUT) {
                 if (originalTimestamp.isAfter(shiftStop) && originalTimestamp.isBefore(shiftStop.plusMinutes(roundInterval))) {
                     adjustedTimestamp = shiftStop;
@@ -136,97 +129,58 @@ public class Punch {
                     adjustedTimestamp = lunchStart;
                     adjustmentType = PunchAdjustmentType.LUNCH_START;
                 }
-                else if (originalTimestamp.isAfter(lunchStop)&&originalTimestamp.isBefore(shiftStop.minusMinutes(dockPenalty))){
+                else if (originalTimestamp.isAfter(lunchStop) && originalTimestamp.isBefore(shiftStop.minusMinutes(dockPenalty))){
                     adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
-                    int min = originalTimestamp.getMinute();
-                    float sec = originalTimestamp.getSecond();
-                    float temp = (min + (sec/60) +(roundInterval/2))/roundInterval;
-                    int round = Math.round(temp)*roundInterval;
-                    int adjust = round-min;
-                    adjustedTimestamp = adjustedTimestamp.plusMinutes(adjust);
-                }
-            }
-        }
-        
-        
-        // Separate handling for lunchStart and lunchStop
-        
-        if (adjustmentType == PunchAdjustmentType.NONE) {
-            if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
-                adjustedTimestamp = (eventType == EventType.CLOCK_IN) ? lunchStop : lunchStart;
-                adjustmentType = (eventType == EventType.CLOCK_IN) ? PunchAdjustmentType.LUNCH_STOP : PunchAdjustmentType.LUNCH_START;
-            } else {
-                // Final rounding logic
-                int totalSeconds = originalTimestamp.getMinute() * 60 + originalTimestamp.getSecond();
-                int intervalSeconds = roundInterval * 60;
-                int roundedSeconds = Math.round((float) totalSeconds / intervalSeconds) * intervalSeconds;
-                int diffSeconds = roundedSeconds - totalSeconds;
-
-                if (diffSeconds != 0) {
-                    adjustedTimestamp = adjustedTimestamp.plusSeconds(diffSeconds);
-                    adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
-                }
-            }
-        }
-        
-        
-        
-        
-        
-        /*
-        // Separate handling for lunchStart and lunchStop
-        
-        
-        
-        
-        
-        
-        
-        if (adjustmentType == PunchAdjustmentType.NONE) {
-            if (originalTimestamp.isAfter(lunchStart) && originalTimestamp.isBefore(lunchStop)) {
-                adjustedTimestamp = lunchStop;
-                adjustmentType = PunchAdjustmentType.LUNCH_STOP;
-            } else {
-                // Final rounding check
-                int minutes = adjustedTimestamp.getMinute();
-                //int roundedMinutes = ((minutes + roundInterval / 2) / roundInterval) * roundInterval;
-                int roundedMinutes = minutes % roundInterval;
-                if (roundedMinutes == (roundInterval / 2)){
-                    // calculate nearest interval using seconds
-                    /*
-                    if seconds >= 30{
-                        // calculate nearest interval up
-                    } else{
-                        // calculate nearest interval down
-                    }
-        */
-        /*S
-                }
-                else if (roundedMinutes >= (roundInterval / 2)){
-                    // calculate nearest interval up
-                    roundedMinutes = 15;
-                }else if (roundedMinutes <= (roundInterval / 2)){
-                    // calculate nearest interval down
-                    roundedMinutes = 45;
-                }else{
-                    // is equal to an interval
-                    roundedMinutes = minutes;
-                }
-                
-                if (minutes != roundedMinutes) { // Round only if necessary
-                    if (roundedMinutes >= 60) {
-                        adjustedTimestamp = adjustedTimestamp.plusHours(1).withMinute(0);
-                    } else {
-                        adjustedTimestamp = adjustedTimestamp.withMinute(roundedMinutes).withSecond(0).withNano(0);
-                    }
-                    adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+                    // LINE ADDED BY JORDAN \\
+                    calculateRounding(roundInterval);
                 }
             }
         }
     }
-        */
+    
+    // *** METHOD ADDED BY JORDAN *** \\
+    // Method to calculate rounding for IntervalRound
+    private void calculateRounding(int roundInterval){
+        int minutes = originalTimestamp.getMinute();
+        int seconds = originalTimestamp.getSecond();
+        int minutesPastInterval = minutes % roundInterval;
+        int timeTillNextInterval = roundInterval - minutesPastInterval;
+        double halfInterval = roundInterval / 2;
+        int halfPossibleSeconds = 30;
 
+        // Check for exact interval match
+        if ( minutesPastInterval == 0){ 
+            // determine if seconds are off
+            if (seconds == 0){
+                adjustmentType = PunchAdjustmentType.NONE;
+            }else{
+                adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+            }
+        }
+        else {
+            adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
+
+            // determine where in the interval the minutes falls
+            if (minutesPastInterval == Math.floor(halfInterval)){
+                // determine if we should round up or down
+                if ( seconds < halfPossibleSeconds ){ 
+                    // calc round down
+                    adjustedTimestamp = adjustedTimestamp.minusMinutes(minutesPastInterval);
+                } else{
+                    // calc round up
+                    adjustedTimestamp = adjustedTimestamp.plusMinutes(timeTillNextInterval);
+                }
+            }
+            else if (minutesPastInterval < halfInterval){
+                // calc round down
+                adjustedTimestamp = adjustedTimestamp.minusMinutes(minutesPastInterval);
+            } else {
+                // calc round up
+                adjustedTimestamp = adjustedTimestamp.plusMinutes(timeTillNextInterval);
+            }
+        }
     }
+    
     // toString method-formats and returns a string that includes the badge ID, event type, day of the week in uppercase, and the original timestamp.
     //***FS-The tests are failing due to output formatting. EX: expected:<[#08D01475 CLOCK IN: TUE] 09/18/2018 11:59:33> but was:<[Tue] 09/18/2018 11:59:33>
     @Override
