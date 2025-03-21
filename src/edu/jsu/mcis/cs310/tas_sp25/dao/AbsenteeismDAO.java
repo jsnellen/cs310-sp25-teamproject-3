@@ -14,7 +14,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.math.RoundingMode;
 
 
 /**
@@ -33,9 +32,20 @@ public class AbsenteeismDAO {
     public AbsenteeismDAO(DAOFactory daoFactory) {
         this.daoFactory = daoFactory;
     }
+<<<<<<< HEAD
 
+=======
+    //Query for find()
+>>>>>>> AbsenteeismDAO
     private static final String QUERY_FIND_ABSENTEEISM = 
         "SELECT minutesmissed FROM absenteeism WHERE employeeid = ? AND date = ?";
+    
+    //Query for create()
+    private static final String QUERY_CREATE_ABSENTEEISM =
+        "INSERT INTO absenteeism (employeeid, date, percentage) " +
+        "VALUES (?, ?, ?) " +
+        "ON DUPLICATE KEY UPDATE percentage = VALUES(percentage)";
+    
 
     public Absenteeism find(Employee employee, LocalDate date) {
         Absenteeism absenteeism = null;
@@ -76,4 +86,27 @@ public class AbsenteeismDAO {
 
         return absenteeism;
     }
+<<<<<<< HEAD
+=======
+    
+    public void create(Absenteeism absenteeism) {
+        try (Connection conn = daoFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(QUERY_CREATE_ABSENTEEISM)) {
+
+            Employee employee = absenteeism.getEmployee();
+            LocalDate payPeriodStart = absenteeism.getPayPeriodStart();
+            BigDecimal absenteeismPercentage = absenteeism.getPercentAbsent();
+
+            // Execute query
+            ps.setInt(1, employee.getId());
+            ps.setDate(2, java.sql.Date.valueOf(payPeriodStart));
+            ps.setBigDecimal(3, absenteeismPercentage);
+            ps.executeUpdate();
+
+        }catch (SQLException e) {
+            throw new DAOException("Error creating absenteeism record for Employee ID: " + absenteeism.getEmployee().getId() + " - " + e.getMessage());
+        }
+
+    }
+>>>>>>> AbsenteeismDAO
 }
