@@ -32,11 +32,7 @@ public class AbsenteeismDAO {
     public AbsenteeismDAO(DAOFactory daoFactory) {
         this.daoFactory = daoFactory;
     }
-<<<<<<< HEAD
 
-=======
-    //Query for find()
->>>>>>> AbsenteeismDAO
     private static final String QUERY_FIND_ABSENTEEISM = 
         "SELECT minutesmissed FROM absenteeism WHERE employeeid = ? AND date = ?";
     
@@ -86,8 +82,6 @@ public class AbsenteeismDAO {
 
         return absenteeism;
     }
-<<<<<<< HEAD
-=======
     
     public void create(Absenteeism absenteeism) {
         try (Connection conn = daoFactory.getConnection();
@@ -108,5 +102,4 @@ public class AbsenteeismDAO {
         }
 
     }
->>>>>>> AbsenteeismDAO
 }
