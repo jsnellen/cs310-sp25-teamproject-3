@@ -6,21 +6,70 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
+
+
+/**
+ * <p>Represents a punch (clock-in or clock-out event) in the TAS system.</p>
+ * <p>A Punch contains both the original and adjusted timestamps, and logic to adjust timestamps based on shift rules.</p>
+ * 
+ * @author Group
+ */
+
 public class Punch {
     
+    /**
+     * Unique identifier for the punch.
+     */
     private int id;
+
+    /**
+     * Terminal ID where the punch was recorded.
+     */
     private int terminalId;
+
+    /**
+     * Badge associated with the punch.
+     */
     private Badge badge;
+
+    /**
+     * Original timestamp recorded when the punch occurred.
+     */
     private LocalDateTime originalTimestamp;
+
+    /**
+     * Adjusted timestamp after applying shift rounding rules.
+     */
     private LocalDateTime adjustedTimestamp;
+
+    /**
+     * The type of punch event (e.g., CLOCK IN, CLOCK OUT).
+     */
     private EventType eventType;
+
+    /**
+     * The type of adjustment applied to the punch.
+     */
     private PunchAdjustmentType adjustmentType;
- 
-    // Date time format and formatter
+
+    /**
+     * Date/time format pattern.
+     */
     private String dateTimeFormat = "EEE MM/dd/yyyy HH:mm:ss";
+
+    /**
+     * Formatter for timestamps using the specified pattern.
+     */
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateTimeFormat);
-    
-    // Constructor
+
+    /**
+     * Constructs a Punch for live clock-in/out.
+     *
+     * @param terminalId the terminal ID where the punch occurred
+     * @param badge      the badge used for the punch
+     * @param eventType  the event type (CLOCK IN / CLOCK OUT)
+     */
+
     public Punch(int terminalId, Badge badge, EventType eventType) {
         this.terminalId = terminalId;
         this.badge = badge;
@@ -30,6 +79,17 @@ public class Punch {
         this.adjustmentType = PunchAdjustmentType.NONE;
     }
 
+    /**
+     * Constructs a Punch from existing database data.
+     *
+     * @param id               the punch ID
+     * @param terminalId       the terminal ID
+     * @param badge            the badge used
+     * @param originalTimestamp the recorded original timestamp
+     * @param eventType        the punch event type
+     */
+
+     
     // Constructor for Punch loaded from database
     public Punch(int id, int terminalId, Badge badge, LocalDateTime originalTimestamp, EventType eventType) {
         this.id = id;
@@ -40,6 +100,8 @@ public class Punch {
         this.adjustedTimestamp = null;
         this.adjustmentType = PunchAdjustmentType.NONE;
     }
+
+
 
     // Getter methods
     public int getId() { return id; }
