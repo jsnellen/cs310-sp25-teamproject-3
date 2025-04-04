@@ -4,13 +4,18 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
-
 import com.github.cliftonlabs.json_simple.*;
-
 import edu.jsu.mcis.cs310.tas_sp25.Punch;
 import edu.jsu.mcis.cs310.tas_sp25.Shift;
+import edu.jsu.mcis.cs310.tas_sp25.EventType;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 
@@ -42,75 +47,83 @@ public final class DAOUtility {
             // add punchData to jsonData
             jsonData.add(punchData);
         }
-        // encode jsonData to jsonString and return jsonString
-        jsonString = Jsoner.serialize(jsonData);
-        return jsonString;
+        return Jsoner.serialize(jsonData);
     }
     
     public static int calculateTotalMinutes(ArrayList<Punch> punchlist, Shift shift) {
-    int totalMinutes = 0;
-    boolean isClockedIn = false;
-    Punch clockInPunch = null;
+        int totalMinutes = 0;
+        boolean isClockedIn = false;
+        Punch clockInPunch = null;
 
     // Sort punches by timestamp to ensure correct order
-    punchlist.sort(Comparator.comparing(Punch::getAdjustedTimestamp));
+        punchlist.sort(Comparator.comparing(Punch::getAdjustedTimestamp));
 
-    for (Punch punch : punchlist) {
-        switch (punch.getPunchtype()) {
-            case CLOCK_IN:
-                if (!isClockedIn) {
-                    clockInPunch = punch;
-                    isClockedIn = true;
-                }
-                break;
-
-            case CLOCK_OUT:
-                if (isClockedIn) {
-                    totalMinutes += calculateDuration(clockInPunch, punch);
-                    isClockedIn = false;
-                }
-                break;
-
-            case TIME_OUT:
+        for (Punch punch : punchlist) {
+            switch (punch.getPunchtype()) {
+                case CLOCK_IN:
+                    if (!isClockedIn) {
+                        clockInPunch = punch;
+                        isClockedIn = true;
+                    }
+                    break;
+                case CLOCK_OUT:
+                    if (isClockedIn) {
+                        totalMinutes += calculateDuration(clockInPunch, punch);
+                        isClockedIn = false;
+                    }
+                    break;
+                case TIME_OUT:
                 // Skip "time out" punches
-                isClockedIn = false;
-                break;
+                    isClockedIn = false;
+                    break;
+            }
         }
-    }
 
     // Deduct lunch break if applicable
-    if (totalMinutes > shift.getShiftDuration() && shift.getLunchDuration() > 0) {
-        totalMinutes -= shift.getLunchDuration();
-    }
+        if (totalMinutes > shift.getShiftDuration() && shift.getLunchDuration() > 0) {
+            totalMinutes -= shift.getLunchDuration();
+        }
 
-    return totalMinutes;
-}
+        return totalMinutes;
+    }
 
     private static int calculateDuration(Punch start, Punch end) {
-        LocalDateTime startTime = start.getAdjustedTimestamp();
-        LocalDateTime endTime = end.getAdjustedTimestamp();
-
-        // Calculate duration in minutes
-        return (int) Duration.between(startTime, endTime).toMinutes();
-    }
-    
-   public static BigDecimal calculateAbsenteeism(ArrayList<Punch> punchlist, Shift shift) {
-    // Calculate total minutes worked by the employee
-    int totalMinutesWorked = calculateTotalMinutes(punchlist, shift);
-
-    // Calculate total minutes scheduled to work
-    int totalMinutesScheduled = shift.getShiftDuration() * 5; // 5 working days per pay period
-
-    // Handle edge case: Avoid division by zero
-    if (totalMinutesScheduled == 0) {
-        return BigDecimal.ZERO;
+        return (int) Duration.between(
+            start.getAdjustedTimestamp(), 
+            end.getAdjustedTimestamp()
+        ).toMinutes();
     }
 
-    // Calculate absenteeism percentage
-    BigDecimal absenteeismPercentage = new BigDecimal(totalMinutesScheduled - totalMinutesWorked)
-            .divide(new BigDecimal(totalMinutesScheduled), 4, RoundingMode.HALF_UP)
-            .multiply(new BigDecimal(100));
-
-    return absenteeismPercentage;
+    public static BigDecimal calculateAbsenteeism(ArrayList<Punch> punchlist, Shift shift) {
+        // Calculate total minutes worked
+        int totalWorked = calculateTotalMinutes(punchlist, shift);
+        
+        // Get all work days (excluding weekends)
+        List<LocalDate> workDays = punchlist.stream()
+                .map(p -> p.getAdjustedTimestamp().toLocalDate())
+                .distinct()
+                .filter(d -> d.getDayOfWeek() != DayOfWeek.SATURDAY)
+                .filter(d -> d.getDayOfWeek() != DayOfWeek.SUNDAY)
+                .collect(Collectors.toList());
+        
+        // Calculate scheduled minutes per day (minus lunch if applicable)
+        int scheduledPerDay = shift.getShiftDuration();
+        if (scheduledPerDay > 360) { // 6 hour threshold
+            scheduledPerDay -= shift.getLunchDuration();
+        }
+        
+        // Calculate total scheduled minutes for all work days
+        int totalScheduled = workDays.size() * scheduledPerDay;
+        
+        // Calculate absenteeism percentage
+        if (totalScheduled == 0) {
+            return BigDecimal.ZERO; // Avoid division by zero
+        }
+        
+        BigDecimal absenteeism = new BigDecimal(totalWorked - totalScheduled)
+                .divide(new BigDecimal(totalScheduled), 4, RoundingMode.HALF_UP)
+                .multiply(new BigDecimal(100));
+        
+        return absenteeism;
     }
 }
