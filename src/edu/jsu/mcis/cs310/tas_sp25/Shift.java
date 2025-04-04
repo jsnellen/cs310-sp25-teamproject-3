@@ -46,6 +46,8 @@ public class Shift {
      * The duration of lunch in minutes.
      */
     private final int lunchDuration;
+    
+    private final int lunchThreshold = 360;
 
     /**
      * The total shift duration in minutes.
@@ -146,6 +148,9 @@ public class Shift {
         return lunchDuration;
     }
 
+    public int getLunchThreshold() {
+        return lunchThreshold;
+    }
     /**
      * Gets the total shift duration in minutes.
      *

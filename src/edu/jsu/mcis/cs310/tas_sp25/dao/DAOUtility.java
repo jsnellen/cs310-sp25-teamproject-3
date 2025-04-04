@@ -100,8 +100,8 @@ public final class DAOUtility {
             }
         }
 
-    // Deduct lunch break if applicable
-        if (totalMinutes > shift.getShiftDuration() && shift.getLunchDuration() > 0) {
+        // Deduct lunch break if applicable
+        if (totalMinutes > shift.getLunchThreshold()) {
             totalMinutes -= shift.getLunchDuration();
         }
 
