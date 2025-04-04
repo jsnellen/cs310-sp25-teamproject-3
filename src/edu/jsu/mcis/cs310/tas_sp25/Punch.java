@@ -172,7 +172,7 @@ public class Punch {
                     adjustedTimestamp = lunchStop;
                     adjustmentType = PunchAdjustmentType.LUNCH_STOP;
                 }
-                else if (originalTimestamp.isAfter(lunchStop)&&originalTimestamp.isBefore(shiftStop.minusMinutes(dockPenalty))){
+                else /* if (originalTimestamp.isAfter(lunchStop) && originalTimestamp.isBefore(shiftStop.minusMinutes(dockPenalty))) */{
                     adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
                     // *** LINE ADDED BY JORDAN *** \\
                     calculateRounding(roundInterval);
@@ -191,7 +191,7 @@ public class Punch {
                     adjustedTimestamp = lunchStart;
                     adjustmentType = PunchAdjustmentType.LUNCH_START;
                 }
-                else if (originalTimestamp.isAfter(lunchStop) && originalTimestamp.isBefore(shiftStop.minusMinutes(dockPenalty))){
+                else /*if (originalTimestamp.isAfter(lunchStop) && originalTimestamp.isBefore(shiftStop.minusMinutes(dockPenalty))) */{
                     adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
                     // LINE ADDED BY JORDAN \\
                     calculateRounding(roundInterval);
@@ -213,7 +213,7 @@ public class Punch {
         // Check for exact interval match
         if ( minutesPastInterval == 0){ 
             // determine if seconds are off
-            if (seconds == 0){
+            if (seconds < halfPossibleSeconds){
                 adjustmentType = PunchAdjustmentType.NONE;
             }else{
                 adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
