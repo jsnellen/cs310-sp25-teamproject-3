@@ -46,6 +46,6 @@ public class Absenteeism {
         s.append("#").append(employee.getBadge().getId());
         s.append(" (Pay Period Starting ").append(payPeriodStart.format(formatter)).append("): ");
         s.append(percentAbsent).append("%");
-        return "";
+        return s.toString();
     }
 }

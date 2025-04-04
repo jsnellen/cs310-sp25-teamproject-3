@@ -230,8 +230,15 @@ public class TimeAccruedTest {
     }
 }
 
+
+
+
+
+
+
 // The code for test Janne Queen 
-public void TimeAccruedTest {
+
+public class TimeAccruedTest {
 
     private DAOFactory daoFactory;
 
