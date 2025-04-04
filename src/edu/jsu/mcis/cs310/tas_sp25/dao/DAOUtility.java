@@ -29,7 +29,6 @@ public final class DAOUtility {
     // Utility Method to get a list of punches and convert them to a JSON string
     public static String getPunchListAsJSON(ArrayList<Punch> dailypunchlist){
         // set up variables to store data
-        String jsonString;
         JsonArray jsonData = new JsonArray();
         
         // for each punch in dailypunchlist
@@ -47,6 +46,28 @@ public final class DAOUtility {
             // add punchData to jsonData
             jsonData.add(punchData);
         }
+        return Jsoner.serialize(jsonData);
+    }
+    
+    // Utility Method to encode information accumlated by an emloyee during one pay period into a JSONString
+    public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchlist, Shift shift){
+        // Set up JsonObjects to store punchlist and totals
+        JsonObject jsonData = new JsonObject();
+        
+        // Get info to be stored
+        int totalMinutes = calculateTotalMinutes(punchlist, shift);
+        BigDecimal absenteeism = calculateAbsenteeism(punchlist, shift);
+        String punchListString = getPunchListAsJSON(punchlist);
+        
+        // place info into JsonObject
+        jsonData.put("absenteeism", absenteeism);
+        jsonData.put("totalminutes", totalMinutes);
+        try {
+            jsonData.put("punchlist", Jsoner.deserialize(punchListString));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         return Jsoner.serialize(jsonData);
     }
     
