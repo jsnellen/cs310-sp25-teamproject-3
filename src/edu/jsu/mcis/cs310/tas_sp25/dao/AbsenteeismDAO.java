@@ -26,7 +26,7 @@ import java.time.LocalDate;
 public class AbsenteeismDAO {
 
     private final DAOFactory daoFactory;
-    private LocalDate payperiod;
+    private LocalDate payPeriodStart;
 
     // Constructor to initialize database connection
     public AbsenteeismDAO(DAOFactory daoFactory) {
@@ -34,9 +34,9 @@ public class AbsenteeismDAO {
         
     }
     
-    private LocalDate getPayPeriodStart(LocalDate date) {
-    return date.minusDays(date.getDayOfWeek().getValue() % 7);
-}
+    private void getPayPeriodStart(LocalDate date) {
+        payPeriodStart = date.minusDays(date.getDayOfWeek().getValue() % 7);
+    }
 
     
     private static final String QUERY_FIND_ABSENTEEISM = 
@@ -54,20 +54,23 @@ public class AbsenteeismDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         
-        LocalDate payPeriodStart = getPayPeriodStart(payperiod);  // or if changed--absenteeism.getPayPeriodStart()
+        getPayPeriodStart(payperiod);  // or if changed--absenteeism.getPayPeriodStart()
 
 
         try {
             Connection conn = daoFactory.getConnection();
-            if (conn != null && conn.isValid(0)) {
+            if (conn.isValid(0)) {
                 ps = conn.prepareStatement(QUERY_FIND_ABSENTEEISM);
                 ps.setInt(1, employee.getId());
                 ps.setDate(2, java.sql.Date.valueOf(payPeriodStart));
-                rs = ps.executeQuery();
-
-                if (rs.next()) {
-                    BigDecimal percentage = rs.getBigDecimal("percentage");
-                    absenteeism = new Absenteeism(employee, payPeriodStart, percentage);
+                
+                boolean hasresults = ps.execute();
+                if (hasresults) {
+                    rs = ps.getResultSet();
+                    if (rs.next()) {
+                        BigDecimal percentage = rs.getBigDecimal("percentage");
+                        absenteeism = new Absenteeism(employee, payPeriodStart, percentage);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -86,16 +89,17 @@ public class AbsenteeismDAO {
 
   
     public void create(Absenteeism absenteeism) {
-        try (Connection conn = daoFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(QUERY_CREATE_ABSENTEEISM)) {
+        try {
+            Connection conn = daoFactory.getConnection();
+            PreparedStatement ps = conn.prepareStatement(QUERY_CREATE_ABSENTEEISM);
 
             Employee employee = absenteeism.getEmployee();
-            LocalDate payperiod = getPayPeriodStart(absenteeism.getPayPeriodStart());
+            getPayPeriodStart(absenteeism.getPayPeriodStart());
             BigDecimal absenteeismPercentage = absenteeism.getPercentAbsent();
 
             // Execute query
             ps.setInt(1, employee.getId());
-            ps.setDate(2, java.sql.Date.valueOf(payperiod));
+            ps.setDate(2, java.sql.Date.valueOf(payPeriodStart));
             ps.setBigDecimal(3, absenteeismPercentage);
             ps.executeUpdate();
 
