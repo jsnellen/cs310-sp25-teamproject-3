@@ -86,8 +86,8 @@ public class AbsenteeismDAO {
 
   
     public void create(Absenteeism absenteeism) {
-        try (Connection conn = daoFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(QUERY_CREATE_ABSENTEEISM)) {
+        try {Connection conn = daoFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(QUERY_CREATE_ABSENTEEISM);
 
             Employee employee = absenteeism.getEmployee();
             LocalDate payperiod = getPayPeriodStart(absenteeism.getPayPeriodStart());
