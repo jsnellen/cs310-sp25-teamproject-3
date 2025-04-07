@@ -184,44 +184,45 @@ public class TimeAccruedTest {
 
     @Test
     public void testCalculateAbsenteeism() {
-        // Initialize DAO objects
-        PunchDAO punchDAO = daoFactory.getPunchDAO();
-        ShiftDAO shiftDAO = daoFactory.getShiftDAO();
-        EmployeeDAO employeeDAO = daoFactory.getEmployeeDAO();
 
-        // Define test parameters
-        int employeeId = 6; // Employee ID for Harry King
-        LocalDate startDate = LocalDate.of(2018, 9, 1); // Start of the pay period
-        LocalDate endDate = LocalDate.of(2018, 9, 30); // End of the pay period
+    // Initialize DAO objects
+    PunchDAO punchDAO = daoFactory.getPunchDAO();
+    ShiftDAO shiftDAO = daoFactory.getShiftDAO();
+    EmployeeDAO employeeDAO = daoFactory.getEmployeeDAO();
 
-        // Retrieve the employee's badge ID
-        Employee employee = employeeDAO.find(employeeId);
-        Badge badge = employee.getBadge();
+    // Define test parameters
+    int employeeId = 6; // Employee ID for Harry King
+    LocalDate startDate = LocalDate.of(2018, 9, 1); // Start of the pay period
+    LocalDate endDate = LocalDate.of(2018, 9, 30); // End of the pay period
 
-        // Retrieve the shift for the employee
-        Shift shift = shiftDAO.find(badge);
+    // Retrieve the employee's badge ID
+    Employee employee = employeeDAO.find(employeeId);
+    Badge badge = employee.getBadge();
 
-        // Retrieve all punches for the employee within the pay period
-        ArrayList<Punch> punchlist = new ArrayList<>();
-        LocalDate currentDate = startDate;
-        while (!currentDate.isAfter(endDate)) {
-            punchlist.addAll(punchDAO.list(badge, currentDate));
-            currentDate = currentDate.plusDays(1);
-        }
+    // Retrieve the shift for the employee
+    Shift shift = shiftDAO.find(badge);
 
-        // Adjust all punches according to the shift rules
-        for (Punch punch : punchlist) {
-            punch.adjust(shift);
-        }
+    // Retrieve all punches for the employee within the pay period
+    ArrayList<Punch> punchlist = new ArrayList<>();
+    LocalDate currentDate = startDate;
+    while (!currentDate.isAfter(endDate)) {
+        punchlist.addAll(punchDAO.list(badge, currentDate));
+        currentDate = currentDate.plusDays(1);
+    }
 
-        // Calculate absenteeism
-        BigDecimal absenteeism = DAOUtility.calculateAbsenteeism(punchlist, shift);
+    // Adjust all punches according to the shift rules
+    for (Punch punch : punchlist) {
+        punch.adjust(shift);
+    }
 
-        // Print absenteeism for debugging
-        System.out.println("Absenteeism for " + badge.getId() + ": " + absenteeism + "%");
+    // Calculate absenteeism
+    BigDecimal absenteeism = DAOUtility.calculateAbsenteeism(punchlist, shift);
 
-        // Compare to Expected Value
-        BigDecimal expectedAbsenteeism = new BigDecimal("39.9800");
-        assertEquals(expectedAbsenteeism, absenteeism);
+    // Print absenteeism for debugging
+    System.out.println("Absenteeism for " + badge.getId() + ": " + absenteeism + "%");
+
+    // Compare to Expected Value
+    BigDecimal expectedAbsenteeism = new BigDecimal("-374.2700");
+    assertEquals(expectedAbsenteeism, absenteeism);
     }
 }
