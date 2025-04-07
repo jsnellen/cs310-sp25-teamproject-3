@@ -100,8 +100,8 @@ public final class DAOUtility {
             }
         }
 
-    // Deduct lunch break if applicable
-        if (totalMinutes > shift.getShiftDuration() && shift.getLunchDuration() > 0) {
+        // Deduct lunch break if applicable
+        if (totalMinutes > shift.getLunchThreshold()) {
             totalMinutes -= shift.getLunchDuration();
         }
 
@@ -123,15 +123,18 @@ public final class DAOUtility {
         List<LocalDate> workDays = punchlist.stream()
                 .map(p -> p.getAdjustedTimestamp().toLocalDate())
                 .distinct()
-                .filter(d -> d.getDayOfWeek() != DayOfWeek.SATURDAY)
-                .filter(d -> d.getDayOfWeek() != DayOfWeek.SUNDAY)
+                // *** commented by Jordan ***
+                //.filter(d -> d.getDayOfWeek() != DayOfWeek.SATURDAY)
+                //.filter(d -> d.getDayOfWeek() != DayOfWeek.SUNDAY)
                 .collect(Collectors.toList());
         
         // Calculate scheduled minutes per day (minus lunch if applicable)
         int scheduledPerDay = shift.getShiftDuration();
+        /* // *** Commented by Jordan ***
         if (scheduledPerDay > 360) { // 6 hour threshold
             scheduledPerDay -= shift.getLunchDuration();
         }
+        */
         
         // Calculate total scheduled minutes for all work days
         int totalScheduled = workDays.size() * scheduledPerDay;
