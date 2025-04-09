@@ -212,12 +212,15 @@ public class Punch {
 
         // Check for exact interval match
         if ( minutesPastInterval == 0){ 
+            adjustmentType = PunchAdjustmentType.NONE;
+            /*
             // determine if seconds are off
             if (seconds < halfPossibleSeconds){
                 adjustmentType = PunchAdjustmentType.NONE;
             }else{
                 adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;
             }
+*/
         }
         else {
             adjustmentType = PunchAdjustmentType.INTERVAL_ROUND;

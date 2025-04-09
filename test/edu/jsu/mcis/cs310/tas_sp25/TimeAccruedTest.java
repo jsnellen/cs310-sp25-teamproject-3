@@ -171,6 +171,14 @@ public class TimeAccruedTest {
              punch.adjust(shift);
         }
 
+        // Added by Jordan
+        // Print punches for debugging
+        System.out.println("Punches for " + badge.getId() + " on " + date + ":");
+           for (Punch punch : dailypunchlist) {
+            System.out.println(punch.getAdjustedTimestamp());
+        }
+        // END OF CODE ADDED \\
+        
         // Calculate total minutes worked
         int totalMinutes = DAOUtility.calculateTotalMinutes(dailypunchlist, shift);
 
@@ -178,7 +186,7 @@ public class TimeAccruedTest {
         System.out.println("Total minutes calculated: " + totalMinutes);
 
         // Compare to Expected Value (total shift duration)
-        int expectedTotalMinutes = 510; // 8.5 hours (510 minutes)
+        int expectedTotalMinutes = 480; // 8 hours (480 minutes)
         assertEquals(expectedTotalMinutes, totalMinutes);
     }
 

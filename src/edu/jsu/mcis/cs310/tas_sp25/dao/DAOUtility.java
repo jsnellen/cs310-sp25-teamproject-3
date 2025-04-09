@@ -109,9 +109,14 @@ public final class DAOUtility {
             end.getAdjustedTimestamp()
         ).toMinutes();
         
-        // Deduct lunch break if applicable
-        if (time > shift.getLunchThreshold()) {
-            time -= shift.getLunchDuration();
+        // Check if the day is a weekend
+        DayOfWeek dayOfWeek = start.getAdjustedTimestamp().getDayOfWeek();
+        boolean isWeekend = (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY);
+        if (!isWeekend){
+            // Deduct lunch break if applicable
+            if (time > shift.getLunchThreshold()) {
+                time -= shift.getLunchDuration();
+            }
         }
         return time;
     }

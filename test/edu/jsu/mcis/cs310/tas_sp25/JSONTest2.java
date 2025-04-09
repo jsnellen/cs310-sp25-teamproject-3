@@ -156,13 +156,20 @@ public class JSONTest2 {
             LocalDate end = begin.with(TemporalAdjusters.next(DayOfWeek.SATURDAY));
 
             ArrayList<Punch> punchlist = punchDAO.list(b, begin, end);
-
+            
             /* Adjust Punch List */
 
             for (Punch punch : punchlist) {
                 punch.adjust(s);
             }
 
+            // CODE ADDED BY JORDAN \\
+            for (Punch punch : punchlist){
+                System.out.println(punch.getPunchtype() + " " + punch.getAdjustmentType() + " " + punch.getAdjustedTimestamp());
+            }
+            System.out.println(expected);
+            // END OF CODE ADDED \\
+            
             /* JSON Conversion */
 
             String actualJSON = DAOUtility.getPunchListPlusTotalsAsJSON(punchlist, s);
