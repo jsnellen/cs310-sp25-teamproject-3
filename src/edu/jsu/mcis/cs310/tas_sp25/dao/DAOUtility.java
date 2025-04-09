@@ -76,7 +76,7 @@ public final class DAOUtility {
         boolean isClockedIn = false;
         Punch clockInPunch = null;
 
-    // Sort punches by timestamp to ensure correct order
+        // Sort punches by timestamp to ensure correct order
         punchlist.sort(Comparator.comparing(Punch::getAdjustedTimestamp));
 
         for (Punch punch : punchlist) {
@@ -89,30 +89,31 @@ public final class DAOUtility {
                     break;
                 case CLOCK_OUT:
                     if (isClockedIn) {
-                        totalMinutes += calculateDuration(clockInPunch, punch);
+                        totalMinutes += calculateDuration(clockInPunch, punch, shift);
                         isClockedIn = false;
                     }
                     break;
                 case TIME_OUT:
-                // Skip "time out" punches
+                    // Skip "time out" punches
                     isClockedIn = false;
                     break;
             }
         }
-
-        // Deduct lunch break if applicable
-        if (totalMinutes > shift.getLunchThreshold()) {
-            totalMinutes -= shift.getLunchDuration();
-        }
-
+        
         return totalMinutes;
     }
 
-    private static int calculateDuration(Punch start, Punch end) {
-        return (int) Duration.between(
+    private static int calculateDuration(Punch start, Punch end, Shift shift) {
+        int time = (int) Duration.between(
             start.getAdjustedTimestamp(), 
             end.getAdjustedTimestamp()
         ).toMinutes();
+        
+        // Deduct lunch break if applicable
+        if (time > shift.getLunchThreshold()) {
+            time -= shift.getLunchDuration();
+        }
+        return time;
     }
 
     public static BigDecimal calculateAbsenteeism(ArrayList<Punch> punchlist, Shift shift) {
