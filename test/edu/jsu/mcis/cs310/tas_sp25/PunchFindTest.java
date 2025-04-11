@@ -87,19 +87,32 @@ public class PunchFindTest {
         assertEquals("#229324A4 CLOCK IN: TUE 08/07/2018 06:59:04", p11.toString());
         assertEquals("#BEAFDB2F CLOCK OUT: THU 08/09/2018 15:32:36", p12.toString());
     }
-    
+
     @Test
     public void testFindPunches5() {
         PunchDAO punchDAO = daoFactory.getPunchDAO();
 
         /* Retrieve Punches from Database */
-        Punch p10 = punchDAO.find(1152);
-        Punch p11 = punchDAO.find(1083);
-        Punch p12 = punchDAO.find(1000);
-
+        Punch p13 = punchDAO.find(1152);
+        Punch p14 = punchDAO.find(1083);
+        Punch p15 = punchDAO.find(1000);
+   
         /* Compare to Expected Values */
-        assertEquals("#DD6E2C0C CLOCK OUT: SAT 08/11/2018 11:03:50", p10.toString());
-        assertEquals("#2A7F5D99 CLOCK IN: SAT 08/11/2018 05:49:34", p11.toString());
-        assertEquals("#229324A4 CLOCK IN: FRI 08/10/2018 06:59:46", p12.toString());
+        assertEquals("#DD6E2C0C CLOCK OUT: SAT 08/11/2018 11:03:50", p13.toString());
+        assertEquals("#2A7F5D99 CLOCK IN: SAT 08/11/2018 05:49:34", p14.toString());
+        assertEquals("#229324A4 CLOCK IN: FRI 08/10/2018 06:59:46", p15.toString());
+    }
+    //Test added by Fallon
+    @Test
+    public void testFindPunches6() {
+        PunchDAO punchDAO = daoFactory.getPunchDAO();
+        
+        Punch p16 = punchDAO.find(235);
+        Punch p17 = punchDAO.find(534);
+        Punch p18 = punchDAO.find(715);
+        
+        assertEquals("#76118CDC CLOCK OUT: WED 08/01/2018 15:34:49 ", p16.toString());
+        assertEquals("#4382D92D CLOCK IN: MON 08/06/2018 07:00:05 ", p17.toString());
+        assertEquals("#398B1563 TIME OUT: TUES 08/07/2018 23:12:34 ", p18.toString());
     }
 }
