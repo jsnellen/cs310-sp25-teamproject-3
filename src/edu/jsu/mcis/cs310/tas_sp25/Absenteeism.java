@@ -92,7 +92,7 @@ public class Absenteeism {
         StringBuilder s = new StringBuilder();
         s.append("#").append(employee.getBadge().getId());
         s.append(" (Pay Period Starting ").append(payPeriodStart.format(formatter)).append("): ");
-        s.append(percentAbsent).append("%");
+        s.append(percentAbsent.setScale(2)).append("%");
         return s.toString();
     }
 }
