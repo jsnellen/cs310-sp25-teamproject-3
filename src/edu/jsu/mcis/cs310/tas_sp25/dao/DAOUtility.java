@@ -142,7 +142,7 @@ public final class DAOUtility {
         if (dailyScheduled > shift.getLunchThreshold()) {
             dailyScheduled -= shift.getLunchDuration();
         }
-        int totalScheduled = weekDays.size() * dailyScheduled;
+        int totalScheduled = /*weekDays.size()*/ 5 * dailyScheduled;
     
         // Debug output
         System.out.println("[DEBUG] Weekdays worked: " + weekDays.size());
