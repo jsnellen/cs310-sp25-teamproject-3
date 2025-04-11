@@ -111,8 +111,8 @@ public class PunchFindTest {
         Punch p17 = punchDAO.find(534);
         Punch p18 = punchDAO.find(715);
         
-        assertEquals("#76118CDC CLOCK OUT: WED 08/01/2018 15:34:49 ", p16.toString());
-        assertEquals("#4382D92D CLOCK IN: MON 08/06/2018 07:00:05 ", p17.toString());
-        assertEquals("#398B1563 TIME OUT: TUES 08/07/2018 23:12:34 ", p18.toString());
+        assertEquals("#76118CDC CLOCK OUT: WED 08/01/2018 15:34:49", p16.toString());
+        assertEquals("#4382D92D CLOCK IN: MON 08/06/2018 07:00:05", p17.toString());
+        assertEquals("#398B1563 TIME OUT: TUE 08/07/2018 23:12:34", p18.toString());
     }
 }
