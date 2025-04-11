@@ -143,6 +143,10 @@ public class ShiftDAO {
         validatedShiftData.put("lunch_stop", Objects.requireNonNullElse(shiftData.get("lunchstop"), "00:00"));
         validatedShiftData.put("lunchduration", Objects.requireNonNullElse(shiftData.get("lunchduration"), "0"));
         validatedShiftData.put("shiftduration", Objects.requireNonNullElse(shiftData.get("shiftduration"), "0"));
+        validatedShiftData.put("lunchthreshold", Objects.requireNonNullElse(shiftData.get("lunchthreshold"), "0"));
+        validatedShiftData.put("roundinterval", Objects.requireNonNullElse(shiftData.get("roundinterval"), "0"));
+        validatedShiftData.put("graceperiod", Objects.requireNonNullElse(shiftData.get("graceperiod"), "0"));
+        validatedShiftData.put("dockpenalty", Objects.requireNonNullElse(shiftData.get("dockpenalty"), "0"));
         return validatedShiftData;
     }
 

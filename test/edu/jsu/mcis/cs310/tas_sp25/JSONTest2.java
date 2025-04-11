@@ -162,14 +162,14 @@ public class JSONTest2 {
             for (Punch punch : punchlist) {
                 punch.adjust(s);
             }
-
+            /*
             // CODE ADDED BY JORDAN \\
             for (Punch punch : punchlist){
                 System.out.println(punch.getPunchtype() + " " + punch.getAdjustmentType() + " " + punch.getAdjustedTimestamp());
             }
             System.out.println(expected);
             // END OF CODE ADDED \\
-            
+            */
             /* JSON Conversion */
 
             String actualJSON = DAOUtility.getPunchListPlusTotalsAsJSON(punchlist, s);
@@ -179,7 +179,6 @@ public class JSONTest2 {
             /* Compare to Expected JSON */
 
             assertEquals(expected, actual);
-
         }
         catch (Exception e) {
             e.printStackTrace();

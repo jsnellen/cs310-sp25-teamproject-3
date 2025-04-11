@@ -47,7 +47,7 @@ public class Shift {
      */
     private final int lunchDuration;
     
-    private final int lunchThreshold = 360;
+    private final int lunchThreshold;
 
     /**
      * The total shift duration in minutes.
@@ -57,17 +57,17 @@ public class Shift {
     /**
      * The interval (in minutes) for rounding punch times.
      */
-    private final int roundInterval = 15;
+    private final int roundInterval;
 
     /**
      * The grace period (in minutes) allowed for clocking in/out before being considered late.
      */
-    private final int gracePeriod = 5;
+    private final int gracePeriod;
 
     /**
      * The dock penalty (in minutes) for clocking in/out beyond the grace period.
      */
-    private final int dockPenalty = 15;
+    private final int dockPenalty;
 
     /**
      * Constructs a Shift object from a HashMap containing shift data.
@@ -83,6 +83,10 @@ public class Shift {
         this.lunchStop = LocalTime.parse(Objects.requireNonNull(shiftData.get("lunch_stop"), "00:00"));
         this.lunchDuration = Integer.parseInt(Objects.requireNonNull(shiftData.get("lunchduration"), "0"));
         this.shiftDuration = Integer.parseInt(Objects.requireNonNull(shiftData.get("shiftduration"), "0"));
+        this.lunchThreshold = Integer.parseInt(Objects.requireNonNull(shiftData.get("lunchthreshold"), "LunchThreshold is missing"));
+        this.roundInterval = Integer.parseInt(Objects.requireNonNull(shiftData.get("roundinterval"), "RoundInterval is missing"));
+        this.gracePeriod = Integer.parseInt(Objects.requireNonNull(shiftData.get("graceperiod"), "GracePeriod is missing"));
+        this.dockPenalty = Integer.parseInt(Objects.requireNonNull(shiftData.get("dockpenalty"), "DockPenalty is missing"));
     }
 
     /**
