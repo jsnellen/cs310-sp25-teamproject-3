@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import org.junit.*;
 import static org.junit.Assert.*;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TimeAccruedTest {
 
@@ -191,46 +194,99 @@ public class TimeAccruedTest {
     }
 
     @Test
-    public void testCalculateAbsenteeism() {
+    public void testCalculateAbsenteeismByWeek() {
+        PunchDAO punchDAO = daoFactory.getPunchDAO();
+        ShiftDAO shiftDAO = daoFactory.getShiftDAO();
+        EmployeeDAO employeeDAO = daoFactory.getEmployeeDAO();
 
-    // Initialize DAO objects
-    PunchDAO punchDAO = daoFactory.getPunchDAO();
-    ShiftDAO shiftDAO = daoFactory.getShiftDAO();
-    EmployeeDAO employeeDAO = daoFactory.getEmployeeDAO();
+        int employeeId = 6;
+        LocalDate startDate = LocalDate.of(2018, 9, 1);
+        LocalDate endDate = LocalDate.of(2018, 9, 30);
 
-    // Define test parameters
-    int employeeId = 6; // Employee ID for Harry King
-    LocalDate startDate = LocalDate.of(2018, 9, 1); // Start of the pay period
-    LocalDate endDate = LocalDate.of(2018, 9, 30); // End of the pay period
+        Employee employee = employeeDAO.find(employeeId);
+        Badge badge = employee.getBadge();
+        Shift shift = shiftDAO.find(badge);
 
-    // Retrieve the employee's badge ID
-    Employee employee = employeeDAO.find(employeeId);
-    Badge badge = employee.getBadge();
+        // Get all punches for the month and adjust them
+        ArrayList<Punch> allPunches = new ArrayList<>();
+        LocalDate currentDate = startDate;
+        while (!currentDate.isAfter(endDate)) {
+            allPunches.addAll(punchDAO.list(badge, currentDate));
+            currentDate = currentDate.plusDays(1);
+        }
+        allPunches.forEach(p -> p.adjust(shift));
 
-    // Retrieve the shift for the employee
-    Shift shift = shiftDAO.find(badge);
+        // Expected values by week
+        Map<Integer, BigDecimal> expectedWeekPercentages = Map.of(
+            1, new BigDecimal("-18.75"),
+            2, new BigDecimal("-35.63"),
+            3, new BigDecimal("-32.03"),
+            4, new BigDecimal("-30.00"),
+            5, new BigDecimal("0.00")
+        );
 
-    // Retrieve all punches for the employee within the pay period
-    ArrayList<Punch> punchlist = new ArrayList<>();
-    LocalDate currentDate = startDate;
-    while (!currentDate.isAfter(endDate)) {
-        punchlist.addAll(punchDAO.list(badge, currentDate));
-        currentDate = currentDate.plusDays(1);
+        Map<Integer, BigDecimal> expectedWeekendPercentages = Map.of(
+            1, new BigDecimal("0.00"),
+            2, new BigDecimal("0.00"),
+            3, new BigDecimal("0.00"),
+            4, new BigDecimal("0.00")
+        );
+
+        // Calculate by week
+        int weekNumber = 1;
+        LocalDate weekStart = startDate;
+        while (weekStart.isBefore(endDate)) {
+            // Create final copies for use in lambda
+            final LocalDate weekStartFinal = weekStart;
+            final LocalDate weekEndFinal = weekStart.plusDays(6).isAfter(endDate) ? 
+             endDate : weekStart.plusDays(6);
+
+            System.out.printf("\n=== Week %d (%s to %s) ===\n", 
+             weekNumber, weekStartFinal, weekEndFinal);
+        
+            // Filter punches for this week using final variables
+            ArrayList<Punch> weekPunches = allPunches.stream()
+                .filter(p -> {
+                    LocalDate punchDate = p.getAdjustedTimestamp().toLocalDate();
+                    return !punchDate.isBefore(weekStartFinal) && 
+                       !punchDate.isAfter(weekEndFinal);
+                })
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        BigDecimal weekAbsenteeism = DAOUtility.calculateAbsenteeism(weekPunches, shift);
+        System.out.println("Calculated Weekly Absenteeism: " + weekAbsenteeism + "%");
+        
+        BigDecimal expectedWeek = expectedWeekPercentages.get(weekNumber);
+        if (expectedWeek != null) {
+            System.out.println("Expected Weekly Absenteeism: " + expectedWeek + "%");
+            assertEquals("Week " + weekNumber + " absenteeism mismatch", 
+                        expectedWeek, weekAbsenteeism);
+        }
+
+        // Weekend calculation
+        ArrayList<Punch> weekendPunches = weekPunches.stream()
+            .filter(p -> p.getAdjustedTimestamp().getDayOfWeek() == DayOfWeek.SATURDAY)
+            .collect(Collectors.toCollection(ArrayList::new));
+        
+        if (!weekendPunches.isEmpty()) {
+            BigDecimal weekendAbsenteeism = DAOUtility.calculateAbsenteeism(weekendPunches, shift);
+            System.out.println("Calculated Weekend Absenteeism: " + weekendAbsenteeism + "%");
+            
+            BigDecimal expectedWeekend = expectedWeekendPercentages.get(weekNumber);
+            if (expectedWeekend != null) {
+                System.out.println("Expected Weekend Absenteeism: " + expectedWeekend + "%");
+                assertEquals("Week " + weekNumber + " weekend absenteeism mismatch", 
+                            expectedWeekend, weekendAbsenteeism);
+            }
+        }
+
+        weekStart = weekStart.plusWeeks(1);
+        weekNumber++;
     }
 
-    // Adjust all punches according to the shift rules
-    for (Punch punch : punchlist) {
-        punch.adjust(shift);
-    }
-
-    // Calculate absenteeism
-    BigDecimal absenteeism = DAOUtility.calculateAbsenteeism(punchlist, shift);
-
-    // Print absenteeism for debugging
-    System.out.println("Absenteeism for " + badge.getId() + ": " + absenteeism + "%");
-
-    // Compare to Expected Value
-    BigDecimal expectedAbsenteeism = new BigDecimal("-374.2700");
-    assertEquals(expectedAbsenteeism, absenteeism);
-    }
+    // Full month calculation
+    BigDecimal monthlyAbsenteeism = DAOUtility.calculateAbsenteeism(allPunches, shift);
+    System.out.println("\nMonthly Absenteeism: " + monthlyAbsenteeism + "%");
+    assertEquals(new BigDecimal("-33.68"), monthlyAbsenteeism);
+}
 }

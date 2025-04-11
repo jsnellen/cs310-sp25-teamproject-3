@@ -58,7 +58,7 @@ public class JSONTest2 {
             for (Punch punch : punchlist) {
                 punch.adjust(s);
             }
-
+            
             /* JSON Conversion */
 
             String actualJSON = DAOUtility.getPunchListPlusTotalsAsJSON(punchlist, s);

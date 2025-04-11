@@ -2,6 +2,8 @@ package edu.jsu.mcis.cs310.tas_sp25.dao;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Set;
+import java.time.format.DateTimeFormatter;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -13,6 +15,7 @@ import edu.jsu.mcis.cs310.tas_sp25.Shift;
 import edu.jsu.mcis.cs310.tas_sp25.EventType;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,17 +53,17 @@ public final class DAOUtility {
     }
     
     // Utility Method to encode information accumlated by an emloyee during one pay period into a JSONString
-    public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchlist, Shift shift){
-        // Set up JsonObjects to store punchlist and totals
+ public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchlist, Shift shift) {
         JsonObject jsonData = new JsonObject();
         
-        // Get info to be stored
         int totalMinutes = calculateTotalMinutes(punchlist, shift);
         BigDecimal absenteeism = calculateAbsenteeism(punchlist, shift);
         String punchListString = getPunchListAsJSON(punchlist);
         
-        // place info into JsonObject
-        jsonData.put("absenteeism", absenteeism);
+        // Format absenteeism 
+        String absenteeismString = String.format("%.2f%%", absenteeism);
+        
+        jsonData.put("absenteeism", absenteeismString);
         jsonData.put("totalminutes", totalMinutes);
         try {
             jsonData.put("punchlist", Jsoner.deserialize(punchListString));
@@ -122,38 +125,38 @@ public final class DAOUtility {
     }
 
     public static BigDecimal calculateAbsenteeism(ArrayList<Punch> punchlist, Shift shift) {
-        // Calculate total minutes worked
         int totalWorked = calculateTotalMinutes(punchlist, shift);
-        
-        // Get all work days (excluding weekends)
-        List<LocalDate> workDays = punchlist.stream()
-                .map(p -> p.getAdjustedTimestamp().toLocalDate())
-                .distinct()
-                // *** commented by Jordan ***
-                //.filter(d -> d.getDayOfWeek() != DayOfWeek.SATURDAY)
-                //.filter(d -> d.getDayOfWeek() != DayOfWeek.SUNDAY)
-                .collect(Collectors.toList());
-        
-        // Calculate scheduled minutes per day (minus lunch if applicable)
-        int scheduledPerDay = shift.getShiftDuration();
-        /* // *** Commented by Jordan ***
-        if (scheduledPerDay > 360) { // 6 hour threshold
-            scheduledPerDay -= shift.getLunchDuration();
+    
+        // Get unique weekdays (Monday-Friday)
+        Set<LocalDate> weekDays = new HashSet<>();
+        for (Punch p : punchlist) {
+            LocalDate date = p.getAdjustedTimestamp().toLocalDate();
+            DayOfWeek day = date.getDayOfWeek();
+            if (day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY) {
+                weekDays.add(date);
+            }
         }
-        */
-        
-        // Calculate total scheduled minutes for all work days
-        int totalScheduled = workDays.size() * scheduledPerDay;
-        
-        // Calculate absenteeism percentage
+    
+        // Calculate scheduled minutes (weekdays only)
+        int dailyScheduled = shift.getShiftDuration();
+        if (dailyScheduled > shift.getLunchThreshold()) {
+            dailyScheduled -= shift.getLunchDuration();
+        }
+        int totalScheduled = weekDays.size() * dailyScheduled;
+    
+        // Debug output
+        System.out.println("[DEBUG] Weekdays worked: " + weekDays.size());
+        System.out.println("[DEBUG] Minutes per scheduled weekday: " + dailyScheduled);
+        System.out.println("[DEBUG] Total Worked: " + totalWorked);
+        System.out.println("[DEBUG] Total Scheduled: " + totalScheduled);
+    
         if (totalScheduled == 0) {
-            return BigDecimal.ZERO; // Avoid division by zero
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
         }
-        
-        BigDecimal absenteeism = new BigDecimal(totalWorked - totalScheduled)
-                .divide(new BigDecimal(totalScheduled), 4, RoundingMode.HALF_UP)
-                .multiply(new BigDecimal(100));
-        
-        return absenteeism;
+    
+        return new BigDecimal(totalScheduled - totalWorked)
+            .divide(new BigDecimal(totalScheduled), 6, RoundingMode.HALF_UP)
+            .multiply(new BigDecimal(100))
+            .setScale(2, RoundingMode.HALF_UP);
     }
 }
