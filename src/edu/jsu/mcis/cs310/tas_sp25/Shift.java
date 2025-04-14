@@ -21,54 +21,7 @@ public class Shift {
      * Description or name of the shift.
      */
     private final String description;
-
-    /**
-     * The start time of the shift.
-     */
-    private final LocalTime start;
-
-    /**
-     * The stop time of the shift.
-     */
-    private final LocalTime stop;
-
-    /**
-     * The start time of the lunch break.
-     */
-    private final LocalTime lunchStart;
-
-    /**
-     * The stop time of the lunch break.
-     */
-    private final LocalTime lunchStop;
-
-    /**
-     * The duration of lunch in minutes.
-     */
-    private final int lunchDuration;
     
-    private final int lunchThreshold;
-
-    /**
-     * The total shift duration in minutes.
-     */
-    private final int shiftDuration;
-
-    /**
-     * The interval (in minutes) for rounding punch times.
-     */
-    private final int roundInterval;
-
-    /**
-     * The grace period (in minutes) allowed for clocking in/out before being considered late.
-     */
-    private final int gracePeriod;
-
-    /**
-     * The dock penalty (in minutes) for clocking in/out beyond the grace period.
-     */
-    private final int dockPenalty;
-
     /**
      * Constructs a Shift object from a HashMap containing shift data.
      *
