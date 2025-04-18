@@ -67,8 +67,8 @@ public class ShiftDAO {
                     }
 
                     // Map fields to match Shift constructor expectations
-                    shiftData.put("start_time", rs.getString("start"));
-                    shiftData.put("stop_time", rs.getString("stop"));
+                    shiftData.put("start_time", rs.getString("shiftstart"));
+                    shiftData.put("stop_time", rs.getString("shiftstop"));
                     shiftData.put("lunch_start", rs.getString("lunchstart"));
                     shiftData.put("lunch_stop", rs.getString("lunchstop"));
                     shiftData.put("lunchthreshold", rs.getString("lunchthreshold"));
