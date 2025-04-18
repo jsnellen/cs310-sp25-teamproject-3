@@ -80,7 +80,7 @@ public class DailySchedule {
         this.gracePeriod = gracePeriod;
         this.dockPenalty = dockPenalty;
         this.lunchDuration = (int)Duration.between(lunchStart, lunchStop).toMinutes();
-        this.shiftDuration = (int)Duration.between(start, stop).toMinutes() - lunchDuration;
+        this.shiftDuration = (int)Duration.between(start, stop).toMinutes();
     }
 
     /**
