@@ -24,6 +24,9 @@ public class ShiftDAO {
      */
     private final DAOFactory daoFactory;
 
+    private static final String QUERY_FIND_BY_ID = "SELECT s.*, ds.* FROM shift s JOIN dailyschedule ds ON s.dailyscheduleid = ds.id WHERE s.id = ?";
+    private static final String QUERY_FIND_BY_BADGE = "SELECT * FROM employee WHERE badgeid = ?";
+
     /**
      * Constructs a ShiftDAO using the provided DAOFactory.
      *
@@ -32,9 +35,6 @@ public class ShiftDAO {
     public ShiftDAO(DAOFactory daoFactory) {
         this.daoFactory = daoFactory;
     }
-
-    private static final String QUERY_FIND_BY_ID = "SELECT * FROM shift WHERE id = ?";
-    private static final String QUERY_FIND_BY_BADGE = "SELECT * FROM employee WHERE badgeid = ?";
 
     /**
      * Finds a shift by its ID.
@@ -66,11 +66,19 @@ public class ShiftDAO {
                         shiftData.put(columnName, columnValue);
                     }
 
-                    int lunchDuration = calculateDuration(rs.getString("lunchstart"), rs.getString("lunchstop"));
-                    int shiftDuration = calculateDuration(rs.getString("shiftstart"), rs.getString("shiftstop"));
+                    // Map fields to match Shift constructor expectations
+                    shiftData.put("start_time", rs.getString("start"));
+                    shiftData.put("stop_time", rs.getString("stop"));
+                    shiftData.put("lunch_start", rs.getString("lunchstart"));
+                    shiftData.put("lunch_stop", rs.getString("lunchstop"));
+                    shiftData.put("lunchthreshold", rs.getString("lunchthreshold"));
+                    shiftData.put("roundinterval", rs.getString("roundinterval"));
+                    shiftData.put("graceperiod", rs.getString("graceperiod"));
+                    shiftData.put("dockpenalty", rs.getString("dockpenalty"));
 
-                    shiftData.put("lunchduration", String.valueOf(lunchDuration));
-                    shiftData.put("shiftduration", String.valueOf(shiftDuration));
+                    // Calculate durations (now handled in DailySchedule constructor)
+                    shiftData.put("lunchduration", "0"); // Placeholder, calculated in DailySchedule
+                    shiftData.put("shiftduration", "0");  // Placeholder, calculated in DailySchedule
 
                     shift = new Shift(validateShiftData(shiftData));
                 }
@@ -137,10 +145,10 @@ public class ShiftDAO {
         HashMap<String, String> validatedShiftData = new HashMap<>();
         validatedShiftData.put("id", Objects.requireNonNull(shiftData.get("id"), "ID is missing"));
         validatedShiftData.put("description", Objects.requireNonNull(shiftData.get("description"), "Description is missing"));
-        validatedShiftData.put("start_time", Objects.requireNonNullElse(shiftData.get("shiftstart"), "00:00"));
-        validatedShiftData.put("stop_time", Objects.requireNonNullElse(shiftData.get("shiftstop"), "00:00"));
-        validatedShiftData.put("lunch_start", Objects.requireNonNullElse(shiftData.get("lunchstart"), "00:00"));
-        validatedShiftData.put("lunch_stop", Objects.requireNonNullElse(shiftData.get("lunchstop"), "00:00"));
+        validatedShiftData.put("start_time", Objects.requireNonNullElse(shiftData.get("start_time"), "00:00"));
+        validatedShiftData.put("stop_time", Objects.requireNonNullElse(shiftData.get("stop_time"), "00:00"));
+        validatedShiftData.put("lunch_start", Objects.requireNonNullElse(shiftData.get("lunch_start"), "00:00"));
+        validatedShiftData.put("lunch_stop", Objects.requireNonNullElse(shiftData.get("lunch_stop"), "00:00"));
         validatedShiftData.put("lunchduration", Objects.requireNonNullElse(shiftData.get("lunchduration"), "0"));
         validatedShiftData.put("shiftduration", Objects.requireNonNullElse(shiftData.get("shiftduration"), "0"));
         validatedShiftData.put("lunchthreshold", Objects.requireNonNullElse(shiftData.get("lunchthreshold"), "0"));
@@ -152,6 +160,7 @@ public class ShiftDAO {
 
     /**
      * Calculates the number of minutes between two time strings.
+     * (Note: Now handled in DailySchedule constructor, but kept for backward compatibility)
      *
      * @param start the start time string (e.g., "08:00")
      * @param stop  the stop time string (e.g., "17:00")
